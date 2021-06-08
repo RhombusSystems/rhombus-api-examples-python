@@ -7,6 +7,10 @@ import csv
 import sys
 import os
 import argparse
+import urllib3
+
+#to disable warnings for not verifying host
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def argparser():
     my_parser = argparse.ArgumentParser()
@@ -49,7 +53,6 @@ def saving_img(thumbnail, name, count):
         verify=False)
 
         content = resp.content
-        #print(resp.status_code)
 
         #opens the folder and writes the image to it
         with open(args.report +'/' + 'Sighting #' + str(count + 1) + '_' + name + '.jpg', 'wb') as f:
@@ -125,7 +128,6 @@ def recent_faces():
                 "start": start
             }
         }
-        print(payload)
         sess.headers = {
             "x-auth-scheme": "api-token",
             "x-auth-apikey": api_key
@@ -134,7 +136,6 @@ def recent_faces():
         verify=False)
         content = resp.content
         data = json.loads(content)
-        #print(resp.status_code)
         return data
 
 #adds the name, timestamp, camera name, and sighting number to a csv
