@@ -15,7 +15,12 @@ NOTE: If you have already generated the Python client and have a RhombusAPI dire
 1. Clone the repo with `git clone https://github.com/RhombusSystems/rhombus-api-examples-python.git` 
 2. Run `curl https://raw.githubusercontent.com/RhombusSystems/rhombus-api-examples-codegen/main/python/install.sh | bash` in the root directory
 
+### Download YOLO Weights and coco classes
+3. Run `cd ExtendedAIModule`
+4. Run `curl https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg -o yolo/yolov3.cfg`
+5. Run `curl https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names -o yolo/coco.names`
+6. Run `curl https://pjreddie.com/media/files/yolov3.weights -o yolo/yolov3.weights`
+
 ### Running the demo
 
-3. Run `cd ExtendedAIModule`
-4. Run the example using `python3 main.py --api_key <YOUR_API_KEY> --camera_uuid <YOUR_CAMERA_UUID>`
+7. Run the example using `python3 main.py --api_key <YOUR_API_KEY> --camera_uuid <YOUR_CAMERA_UUID>`
