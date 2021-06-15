@@ -31,6 +31,7 @@ from rhombus_services.frame_generator import generate_frames;
 from rhombus_services.arg_parser import parse_arguments;
 from rhombus_services.encoding_generator import generate_encodings;
 from rhombus_services.face_recognizer import recognize_faces_in_directory;
+from rhombus_services.slack_service import send_slack_message;
 
 
 class Main:
@@ -51,6 +52,8 @@ class Main:
     __interval: int = 10;
     __http_client: requests.sessions.Session;
     __force: bool = False;
+    __name: str;
+    __counter: int = 0;
 
 
     def __init__(self, args: argparse.Namespace) -> None:
@@ -64,6 +67,7 @@ class Main:
         self.__interval = args.interval
         self.__api_key = args.api_key;
         self.__force = args.force;
+        self.__name = args.name;
 
         # Create an API Client and Configuration which will be used throughout the program
         config: rapi.Configuration = rapi.Configuration();
@@ -90,23 +94,35 @@ class Main:
 
         self.__schedule();
 
-        print("Fetching URIs...");
+        #  print("Fetching URIs...");
         
         # Get the media URIs from rhombus for our camera, this is done every sequence so that we don't have to worry about federated tokens. 
 	    # These URIs stay the same, but this method will also create our federated tokens
         uri, token = fetch_media_uris(api_client=self.__api_client, camera_uuid=self.__camera_uuid, duration=120, type=self.__connection_type);
 
-        print("Downloading the VOD...");
+        #  print("Downloading the VOD...");
 
         # Download the mp4 of the last [duration] seconds starting from Now - [duration] seconds ago
-        clip_path, directory_path, start_time = fetch_vod(api_key=self.__api_key,  federated_token=token, http_client=self.__http_client, uri=uri, type=self.__connection_type, duration=self.__interval);
+        clip_path, directory_path, _ = fetch_vod(api_key=self.__api_key,  federated_token=token, http_client=self.__http_client, uri=uri, type=self.__connection_type, duration=self.__interval);
 
-        print("Generating frames...");
+        #  print("Generating frames...");
 
         # Generate a bunch of frames from our downloaded mp4, these will be put in vodRes.directoryPath/FRAME.jpg and the number of them will depend on the FPS, which is set right now to 3
         generate_frames(clip_path=clip_path, directory_path=directory_path, FPS=0.5);
 
+        #  print("Recognizing faces...");
+
         names: set[str] = recognize_faces_in_directory(directory=directory_path);
+
+        if(self.__name not in names):
+            self.__counter += 1;
+            print("Get back to work " + self.__name + "!!!!");
+            print(self.__name + " has not been at work " + str(self.__counter) + " times.");
+        else:
+            print("Hard at work");
+        
+        cleanup(directory=directory_path);
+
 
 
     def execute(self):

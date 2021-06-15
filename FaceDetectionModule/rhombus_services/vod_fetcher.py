@@ -19,7 +19,7 @@ def save_clip(headers: dict[str, str], http_client: requests.sessions.Session, f
     :param file: The output file to write to
     :param uri: The media URI to download from
     """
-    print("Saving clip " + uri);
+    #  print("Saving clip " + uri);
 
     # Download the file from the uri
     buffer = http_client.get(uri, headers=headers)

@@ -58,9 +58,6 @@ def recognize_faces_in_directory(directory: str) -> set[str]:
         res = recognize_faces(path=file);
         names.update(res);
 
-    for name in names:
-        print (name);
-
     return names;
 
         

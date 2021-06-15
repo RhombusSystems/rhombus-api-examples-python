@@ -17,12 +17,14 @@ def parse_arguments(argv: list[str]) -> argparse.Namespace:
     parser.add_argument('--camera_uuid', '-c', type=str, required=True, help='Device Id to pull footage from')
 
     # The --interval or -i param will hold how often to poll the camera for new footage in seconds, by default 10 seconds
-    parser.add_argument('--interval', '-i', type=int, required=False, help='How often to poll the camera for new footage in seconds, by default 10 seconds', default=10)
+    parser.add_argument('--interval', '-i', type=int, required=False, help='How often to poll the camera for new footage in seconds, by default 10 seconds', default=60)
 
     # The --connection_type or -t param will hold the ConnectionType to the camera. It is not recommended to run in WAN mode unless this python server is running on a separate network from the camera
     parser.add_argument('--connection_type', '-t', type=str, required=False, help='The connection type to the camera, either LAN or WAN (default LAN)', default="LAN")
 
     parser.add_argument('--force', '-f', type=bool, required=False, help='Whether to force the regeneration of face encodings', default=False);
+
+    parser.add_argument('--name', '-n', type=str, required=True, help='The name to look for and notify if not found');
 
     # Return all of our arguments
     return parser.parse_args(argv);
