@@ -8,8 +8,8 @@ import requests;
 # Import threading to create infinitely running runner loop
 import threading;
 
-# Import OpenCV to create our client
-import cv2;
+# Import OS to create our resource directory
+import os;
 
 sys.path.append('../')
 
@@ -31,7 +31,6 @@ from rhombus_services.frame_generator import generate_frames;
 from rhombus_services.arg_parser import parse_arguments;
 from rhombus_services.encoding_generator import generate_encodings;
 from rhombus_services.face_recognizer import recognize_faces_in_directory;
-from rhombus_services.slack_service import send_slack_message;
 
 
 class Main:
@@ -41,8 +40,11 @@ class Main:
     :attribute __camera_uuid: The Camera UUID that is specified when running the application
     :attribute __interval: The interval in seconds of fetching clips from the VOD, by default 10 second clips fetched every 10 seconds
     :attribute __connection_type: The ConnectionType that is specified when running the application
+    :attribute __force: The user specified option whether or not to force regeneration of the res/face_enc file ignoring whether it already exists or not. By default this is false.
+    :attribute __name: The user specified name to look for in VODs.
     :attribute __api_client: The RhombusAPI client that will be used throughout the lifetime of our application
     :attribute __http_client: The HTTP Client that will be used for fetching clips throughout the lifetime of our application
+    :attribute __counter: The number of times a user was not found in video footage.
     """
 
     __api_key: str;
@@ -84,7 +86,6 @@ class Main:
             self.__connection_type = ConnectionType.WAN
             print(LogColors.WARNING + "Running in WAN mode! This is not recommended if it can be avoided." + LogColors.ENDC)
 
-
         # Create an HTTP client
         self.__http_client = requests.sessions.Session();
 
@@ -93,42 +94,56 @@ class Main:
         """Executes the services that will download the clip, classify it, and upload the bounding boxes to Rhombus."""
 
         self.__schedule();
-
-        #  print("Fetching URIs...");
         
         # Get the media URIs from rhombus for our camera, this is done every sequence so that we don't have to worry about federated tokens. 
 	    # These URIs stay the same, but this method will also create our federated tokens
         uri, token = fetch_media_uris(api_client=self.__api_client, camera_uuid=self.__camera_uuid, duration=120, type=self.__connection_type);
 
-        #  print("Downloading the VOD...");
-
         # Download the mp4 of the last [duration] seconds starting from Now - [duration] seconds ago
         clip_path, directory_path, _ = fetch_vod(api_key=self.__api_key,  federated_token=token, http_client=self.__http_client, uri=uri, type=self.__connection_type, duration=self.__interval);
-
-        #  print("Generating frames...");
 
         # Generate a bunch of frames from our downloaded mp4, these will be put in vodRes.directoryPath/FRAME.jpg and the number of them will depend on the FPS, which is set right now to 3
         generate_frames(clip_path=clip_path, directory_path=directory_path, FPS=0.5);
 
-        #  print("Recognizing faces...");
-
+        # Recognize all of the faces in our directory path which has all of our frames
         names: set[str] = recognize_faces_in_directory(directory=directory_path);
 
+        # If our requested name is not found in our directory
         if(self.__name not in names):
+            # Increase our counter by one
             self.__counter += 1;
+
+            # Print out
             print("Get back to work " + self.__name + "!!!!");
             print(self.__name + " has not been at work " + str(self.__counter) + " times.");
         else:
+            # Print out
             print("Hard at work");
         
+        # Clean the clip in our resource directory
         cleanup(directory=directory_path);
 
 
 
     def execute(self):
         """Starts the runner, which will create a scheduled loop of runners."""
+
+        # The resource directory will be in the root source directory / FaceDetectionModule / res
+        res_dir: str = "./res";
+
+        # If the resource directory doesn't exist, then create it
+        if(not os.path.exists(res_dir)):
+            os.mkdir(res_dir);
+
+        print("Downloading faces... This can take anywhere from a couple of seconds to minutes to hours if there are many faces");
+
+        # Get all of the faces identified through Rhombus and download thumbnails for them
         names = download_faces(api_key=self.__api_key, api_client=self.__api_client, http_client=self.__http_client);
+
+        # Generate the encodings for our faces
         generate_encodings(names=names, force=self.__force);
+
+        # Run the main recognizer
         self.__runner();
 
     def __schedule(self):

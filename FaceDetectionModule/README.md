@@ -1,7 +1,7 @@
-# Rhombus Extended AI Module
+# Rhombus Face Detection Module 
 
 ## What is this
-Rhombus Extended AI Module is a Python commandline application that identifies objects in Rhombus Systems cameras using the OpenCV and YOLO with the COCO model. This is an example of how to use the [Rhombus API](https://apidocs.rhombussystems.com/reference). This is NOT a production ready example, it is for demonstrational purposes only
+Rhombus Face Detection Module is a Python commandline application that recognizes faces in Rhombus Systems cameras using the OpenCV to determine if someone is not in frame. This is an example of how to use the [Rhombus API](https://apidocs.rhombussystems.com/reference). This is NOT a production ready example, it is for demonstrational purposes only
 
 The code demos how to send API requests to Rhombus using API token authentication and how to download VODs from Rhombus.
 
@@ -16,11 +16,9 @@ NOTE: If you have already generated the Python client and have a RhombusAPI dire
 2. Run `curl https://raw.githubusercontent.com/RhombusSystems/rhombus-api-examples-codegen/main/python/install.sh | bash` in the root directory
 
 ### Download YOLO Weights and coco classes
-3. Run `cd ExtendedAIModule`
-4. Run `curl https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg -o yolo/yolov3.cfg`
-5. Run `curl https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names -o yolo/coco.names`
-6. Run `curl https://pjreddie.com/media/files/yolov3.weights -o yolo/yolov3.weights`
+3. Run `cd FaceDetectionModule`
+4. Run `curl https://pjreddie.com/media/files/yolov3.weights -o yolo/yolov3.weights`
 
 ### Running the demo
 
-7. Run the example using `python3 main.py --api_key <YOUR_API_KEY> --camera_uuid <YOUR_CAMERA_UUID>`
+5. Run the example using `python3 main.py --api_key <YOUR_API_KEY> --camera_uuid <YOUR_CAMERA_UUID>`
