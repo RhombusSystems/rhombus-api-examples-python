@@ -1,35 +1,38 @@
+# Import type hints
+from typing import List
+
 # Import sys and argparse for cmd args
-import sys;
-import argparse;
+import sys
+import argparse
 
 # Import requests to create our http client
-import requests;
+import requests
 
 # Import threading to create infinitely running runner loop
-import threading;
+import threading
 
 # Import OpenCV to create our client
-import cv2;
+import cv2
 
 sys.path.append('../')
 
 # Import RhombusAPI to create our Api Client
-import RhombusAPI as rapi;
+import RhombusAPI as rapi
 
 # Import our connection type
-from helper_types.connection_type import ConnectionType;
+from helper_types.connection_type import ConnectionType
 
 # Import some logging utilities
-from logging_utils.colors import LogColors;
+from logging_utils.colors import LogColors
 
 # Import all of our services which will do the heavy lifting
-from rhombus_services.media_uri_fetcher import fetch_media_uris;
-from rhombus_services.vod_fetcher import fetch_vod;
-from rhombus_services.frame_generator import generate_frames;
-from rhombus_services.classifier import classify_directory;
-from rhombus_services.rhombus_finalizer import rhombus_finalizer;
-from rhombus_services.cleanup import cleanup;
-from rhombus_services.arg_parser import parse_arguments;
+from rhombus_services.media_uri_fetcher import fetch_media_uris
+from rhombus_services.vod_fetcher import fetch_vod
+from rhombus_services.frame_generator import generate_frames
+from rhombus_services.classifier import classify_directory
+from rhombus_services.rhombus_finalizer import rhombus_finalizer
+from rhombus_services.cleanup import cleanup
+from rhombus_services.arg_parser import parse_arguments
 
 
 class Main:
@@ -45,15 +48,14 @@ class Main:
     :attribute __coco_classes: All of the available COCO class names, viewable in yolo/coco.names
     """
 
-    __api_key: str;
-    __api_client: rapi.ApiClient;
-    __connection_type: ConnectionType;
-    __camera_uuid: str;
-    __interval: int = 10;
-    __http_client: requests.sessions.Session;
-    __yolo_net: cv2.dnn_Net;
-    __coco_classes: list[str]
-
+    __api_key: str
+    __api_client: rapi.ApiClient
+    __connection_type: ConnectionType
+    __camera_uuid: str
+    __interval: int = 10
+    __http_client: requests.sessions.Session
+    __yolo_net: cv2.dnn_Net
+    __coco_classes: List[str]
 
     def __init__(self, args: argparse.Namespace) -> None:
         """Constructor for the Main class, which will initialize all of the clients and arguments
@@ -62,89 +64,91 @@ class Main:
         """
 
         # Save the cmd args in our runner
-        self.__camera_uuid = args.camera_uuid;
+        self.__camera_uuid = args.camera_uuid
         self.__interval = args.interval
-        self.__api_key = args.api_key;
+        self.__api_key = args.api_key
 
         # Create an API Client and Configuration which will be used throughout the program
-        config: rapi.Configuration = rapi.Configuration();
-        config.api_key['x-auth-apikey'] = args.api_key;
+        config: rapi.Configuration = rapi.Configuration()
+        config.api_key['x-auth-apikey'] = args.api_key
 
         # We need to set the additional header of x-auth-scheme, otherwise we will receive 401
-        self.__api_client = rapi.ApiClient(configuration=config, header_name="x-auth-scheme", header_value="api-token");
+        self.__api_client = rapi.ApiClient(configuration=config, header_name="x-auth-scheme", header_value="api-token")
 
         # By default the connection type is LAN, unless otherwise specified by the user
-        self.__connection_type = ConnectionType.LAN;
+        self.__connection_type = ConnectionType.LAN
 
         # If the user specifies -t WAN, then we need to run in WAN mode, however this is not recommended
-        if(args.connection_type == "WAN"):
+        if (args.connection_type == "WAN"):
             self.__connection_type = ConnectionType.WAN
-            print(LogColors.WARNING + "Running in WAN mode! This is not recommended if it can be avoided." + LogColors.ENDC)
-
+            print(
+                LogColors.WARNING + "Running in WAN mode! This is not recommended if it can be avoided." + LogColors.ENDC)
 
         # Create an HTTP client
-        self.__http_client = requests.sessions.Session();
-        
+        self.__http_client = requests.sessions.Session()
+
         # Create our neural net
         self.__yolo_net = cv2.dnn.readNetFromDarknet('yolo/yolov3.cfg', 'yolo/yolov3.weights')
         self.__yolo_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
 
         # Load the classes from the coco.names file
         self.__coco_classes = open('yolo/coco.names').read().strip().split('\n')
-    
 
     def __runner(self) -> None:
         """Executes the services that will download the clip, classify it, and upload the bounding boxes to Rhombus."""
 
         # We want this runner to repeat on a loop, so schedule another runner at the beginning. This has to be done before everything else executes to ensure that we are not delayed by the other services
-        self.__schedule();
+        self.__schedule()
 
-        print("Fetching URIs...");
+        print("Fetching URIs...")
 
         # Get the media URIs from rhombus for our camera, this is done every sequence so that we don't have to worry about federated tokens. 
-	    # These URIs stay the same, but this method will also create our federated tokens
-        uri, token = fetch_media_uris(api_client=self.__api_client, camera_uuid=self.__camera_uuid, duration=120, type=self.__connection_type);
+        # These URIs stay the same, but this method will also create our federated tokens
+        uri, token = fetch_media_uris(api_client=self.__api_client, camera_uuid=self.__camera_uuid, duration=120,
+                                      connection_type=self.__connection_type)
 
-        print("Downloading the VOD...");
+        print("Downloading the VOD...")
 
         # Download the mp4 of the last [duration] seconds starting from Now - [duration] seconds ago
-        clip_path, directory_path, start_time = fetch_vod(api_key=self.__api_key,  federated_token=token, http_client=self.__http_client, uri=uri, type=self.__connection_type, duration=self.__interval);
+        clip_path, directory_path, start_time = fetch_vod(api_key=self.__api_key, federated_token=token,
+                                                          http_client=self.__http_client, uri=uri,
+                                                          connection_type=self.__connection_type,
+                                                          duration=self.__interval)
 
-        print("Generating frames...");
+        print("Generating frames...")
 
         # Generate a bunch of frames from our downloaded mp4, these will be put in vodRes.directoryPath/FRAME.jpg and the number of them will depend on the FPS, which is set right now to 3
-        generate_frames(clip_path=clip_path, directory_path=directory_path, FPS=3.0);
+        generate_frames(clip_path=clip_path, directory_path=directory_path, FPS=3.0)
 
-        print("Classifying Images...");
+        print("Classifying Images...")
 
         # Classify all of the frames generated in the vodRes.directoryPath
-        boxes = classify_directory(self.__yolo_net, self.__coco_classes, directory_path, start_time, self.__interval);
+        boxes = classify_directory(self.__yolo_net, self.__coco_classes, directory_path, start_time, self.__interval)
 
-        print("Sending the data to Rhombus...");
+        print("Sending the data to Rhombus...")
 
         # Send all of our bounding boxes to rhombus
-        rhombus_finalizer(self.__api_client, self.__camera_uuid, boxes);
-        
-        print("Cleaning up!");
+        rhombus_finalizer(self.__api_client, self.__camera_uuid, boxes)
+
+        print("Cleaning up!")
 
         # Remove the downloaded files, the mp4 and jpgs
-        cleanup(directory_path);
-
+        cleanup(directory_path)
 
     def execute(self):
         """Starts the runner, which will create a scheduled loop of runners."""
-        self.__runner();
+        self.__runner()
 
     def __schedule(self):
         """Schedule another runner."""
 
         # Each runner instance will run in a scheduled thread
-        threading.Timer(args.interval, self.__runner).start();
+        threading.Timer(args.interval, self.__runner).start()
 
 
 if __name__ == "__main__":
     # Get the user's arguments
-    args = parse_arguments(sys.argv[1:]);
+    args = parse_arguments(sys.argv[1:])
 
     # Start the main runner
-    Main(args).execute();
+    Main(args).execute()
