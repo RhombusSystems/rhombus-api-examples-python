@@ -17,10 +17,11 @@ NOTE: If you have already generated the Python client and have a RhombusAPI dire
 
 ### Download YOLO Weights and coco classes
 3. Run `cd ExtendedAIModule`
-4. Run `curl https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg -o yolo/yolov3.cfg`
-5. Run `curl https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names -o yolo/coco.names`
-6. Run `curl https://pjreddie.com/media/files/yolov3.weights -o yolo/yolov3.weights`
+4. Run `mkdir ExtendedAIModule`
+5. Run `curl https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg -o yolo/yolov3.cfg`
+6. Run `curl https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names -o yolo/coco.names`
+7. Run `curl https://pjreddie.com/media/files/yolov3.weights -o yolo/yolov3.weights`
 
 ### Running the demo
 
-7. Run the example using `python3 main.py --api_key <YOUR_API_KEY> --camera_uuid <YOUR_CAMERA_UUID>`
+8. Run the example using `python3 main.py --api_key <YOUR_API_KEY> --camera_uuid <YOUR_CAMERA_UUID>`
