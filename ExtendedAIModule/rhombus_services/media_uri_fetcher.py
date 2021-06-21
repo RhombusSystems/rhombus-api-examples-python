@@ -4,13 +4,13 @@ import RhombusAPI as rapi;
 # Import ConnectionType to get the correct connection URI
 from helper_types.connection_type import ConnectionType
 
-def fetch_media_uris(api_client: rapi.ApiClient, camera_uuid: str, duration: int, type: ConnectionType) -> tuple[str, str] :
+def fetch_media_uris(api_client: rapi.ApiClient, camera_uuid: str, duration: int, connection_type: ConnectionType) -> tuple[str, str] :
     """Get the lan URI of the camera and generate a federatedToken to download the VOD
     
     :param api_client: The API Client for sending requests to Rhombus
     :param camera_uuid: The UUID of the camera to get info for
     :param duration: How long the federated token should last in seconds
-    :param type: Whether to use LAN or WAN for the connection, by default LAN and unless you are on a different connection, you should really just use LAN
+    :param connection_type: Whether to use LAN or WAN for the connection, by default LAN and unless you are on a different connection, you should really just use LAN
     :return: Returns the lan URI of the vod and the generated federated token
     """
 
@@ -28,4 +28,4 @@ def fetch_media_uris(api_client: rapi.ApiClient, camera_uuid: str, duration: int
     federated_token_response = org_api.generate_federated_session_token(body=federated_token_request)
 
     # Return our data
-    return media_uris.lan_vod_mpd_uris_templates[0] if type == ConnectionType.LAN else media_uris.wan_vod_mpd_uri_template, federated_token_response.federated_session_token; 
+    return media_uris.lan_vod_mpd_uris_templates[0] if connection_type == ConnectionType.LAN else media_uris.wan_vod_mpd_uri_template, federated_token_response.federated_session_token; 

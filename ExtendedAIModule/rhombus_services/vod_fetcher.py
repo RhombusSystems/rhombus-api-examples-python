@@ -32,14 +32,14 @@ def save_clip(headers: dict[str, str], http_client: requests.sessions.Session, f
     buffer.close()
 
 
-def fetch_vod(api_key: str, federated_token: str, http_client: requests.sessions.Session, uri: str, type: ConnectionType, duration: int = 20) -> tuple[str, str, int]:
+def fetch_vod(api_key: str, federated_token: str, http_client: requests.sessions.Session, uri: str, connection_type: ConnectionType, duration: int = 20) -> tuple[str, str, int]:
     """Download a vod to disk. It will be saved in res/<current time in seconds>
 
     :param api_key: The API Key specified by the user
     :param federated_token: The federated token which will be used to download the files. Without this we would get a 401 authentication error
     :param http_client: The HTTP Client to download the files with which is initialized at startup
     :param uri: The VOD uri to download from
-    :param type: The ConnectionType to the Camera to download the VOD from
+    :param connection_type: The ConnectionType to the Camera to download the VOD from
     :param duration: The duration in seconds of the clip to download
     :return: Returns the path of the downloaded vod mp4 and the directory in which that downloaded mp4 is in.
              It will also return the timestamp in seconds since epoch of the startTime of the clip
@@ -73,7 +73,7 @@ def fetch_vod(api_key: str, federated_token: str, http_client: requests.sessions
     }
 
     # This will change depend on whether we are using WAN or LAN
-    mpd_name = "clip.mpd" if type == ConnectionType.LAN else "file.mpd"
+    mpd_name = "clip.mpd" if connection_type == ConnectionType.LAN else "file.mpd"
 
     # Create an output file. This will be written in bytes.
     with open(path, "wb") as file:
