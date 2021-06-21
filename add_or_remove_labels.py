@@ -21,9 +21,6 @@ class labeling:
         self.api_sess.headers = {
             "x-auth-scheme": "api-token",
             "x-auth-apikey": self.args.APIkey}
-        today = datetime.now().replace(microsecond=0, second=0, minute=0)
-        self.end_time = today
-        self.start_time =  (self.end_time - timedelta(days=365))
 
     @staticmethod
     def __initialize_argument_parser():
@@ -37,12 +34,12 @@ class labeling:
         return parser
 
     #adds a label to all of the names
-    def add_label(self):
+    def add_label(self, event):
         # url of the api
         endpoint = self.api_url + "/api/face/addFaceLabel"
         # any parameters
         payload = {
-            "faceIdentifier" : self.names_list[self.event],
+            "faceIdentifier" : event,
             "label" : self.args.label
         }
         resp = self.api_sess.post(endpoint, json=payload,
@@ -50,12 +47,12 @@ class labeling:
         content = resp.content
         data = json.loads(content)
 
-    def remove_label(self):
+    def remove_label(self, event):
         # url of the api
         endpoint = self.api_url + "/api/face/removeFaceLabel"
         # any parameters
         payload = {
-            "faceIdentifier" : self.names_list[self.event],
+            "faceIdentifier" : event,
             "label" : self.args.label
         }
         resp = self.api_sess.post(endpoint, json=payload,
@@ -71,11 +68,11 @@ class labeling:
     def execute(self):
         self.names()
         if self.args.choice == 'add':
-            for self.event, item in enumerate(self.names_list):
-                self.add_label()
+            for event in self.names_list:
+                self.add_label(event)
         elif self.args.choice == 'remove':
-            for self.event, item in enumerate(self.names_list):
-                self.remove_label()
+            for event in self.names_list:
+                self.remove_label(event)
 
 if __name__ == "__main__":
     engine = labeling(sys.argv[1:])
