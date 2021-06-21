@@ -1,17 +1,20 @@
 # Import requests to download the VOD
-import requests
+import requests;
 
 # Import OS and IO to write the VOD to a file
-import os
-import io
+import os;
+import io;
 
 # Import time to get the current time
-import time
+import time;
 
 # Import ConnectionType to specify what connection we should have to the camera when downloading our data
-from helper_types.connection_type import ConnectionType
+from helper_types.connection_type import ConnectionType;
 
-def save_clip(headers: dict[str, str], http_client: requests.sessions.Session, file: io.BufferedWriter, uri: str) -> None:
+# Import Dict for type hints in the header parameter
+from typing import Dict;
+
+def save_clip(headers: Dict[str, str], http_client: requests.sessions.Session, file: io.BufferedWriter, uri: str) -> None:
     """Save an m4v or mp4 url to the specified output file
 
     :param headers: The HTTP Headers to send with our request. These are required to authenticate
