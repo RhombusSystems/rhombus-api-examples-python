@@ -52,11 +52,6 @@ class List:
         verify=False)
         content = resp.content
         data = json.loads(content)
-        organized = json.dumps(resp.json(), indent=2, sort_keys=True)
-        #print(organized)
-        for value in data['users']:
-            print(value['name'])
-            print(value['emailCaseSensitive'])
         return data
 
     def Names(self):
