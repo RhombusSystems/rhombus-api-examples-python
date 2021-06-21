@@ -2,10 +2,12 @@
 from typing import Dict
 from typing import Tuple
 
+
 # Import requests to download the VOD
 import requests
 
-# Import OS and IO to write the VOD to a file
+# Import pathlib, OS, and IO to write the VOD to a file
+import pathlib
 import os
 import io
 
@@ -62,7 +64,7 @@ def fetch_vod(api_key: str, federated_token: str, http_client: requests.sessions
 
     # If the directory does not already exist, then we need to create it
     if (not os.path.exists(dir)):
-        os.mkdir(dir)
+        pathlib.Path(dir).mkdir(parents=True, exist_ok=True)
 
     # The path of the clip is dir/clip.mp4 regardless of timestamp. The file is always called clip.mp4
     path = dir + "clip.mp4"
