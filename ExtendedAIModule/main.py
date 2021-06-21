@@ -9,7 +9,9 @@ import argparse
 import requests
 
 # Import threading to create infinitely running runner loop
-import threading
+#  import threading
+import time
+from timeit import default_timer as timer
 
 # Import OpenCV to create our client
 import cv2
@@ -97,8 +99,8 @@ class Main:
     def __runner(self) -> None:
         """Executes the services that will download the clip, classify it, and upload the bounding boxes to Rhombus."""
 
-        # We want this runner to repeat on a loop, so schedule another runner at the beginning. This has to be done before everything else executes to ensure that we are not delayed by the other services
-        self.__schedule()
+        # Start a timer to time our execution time
+        start = timer()
 
         print("Fetching URIs...")
 
@@ -123,27 +125,36 @@ class Main:
         print("Classifying Images...")
 
         # Classify all of the frames generated in the vodRes.directoryPath
-        boxes = classify_directory(self.__yolo_net, self.__coco_classes, directory_path, start_time, self.__interval)
+        #  boxes = classify_directory(self.__yolo_net, self.__coco_classes, directory_path, start_time, self.__interval)
 
         print("Sending the data to Rhombus...")
 
         # Send all of our bounding boxes to rhombus
-        rhombus_finalizer(self.__api_client, self.__camera_uuid, boxes)
+        #  rhombus_finalizer(self.__api_client, self.__camera_uuid, boxes)
 
         print("Cleaning up!")
 
         # Remove the downloaded files, the mp4 and jpgs
         cleanup(directory_path)
 
+        # End timer
+        end = timer()
+
+        # Get the total execution time
+        total_time = end - start
+
+        # If we are underneath our interval, then we will want to sleep. 
+        # Otherwise if we are over our interval, then that means we are lagging behind and we need to process the next interval immediately
+        if(total_time < self.__interval):
+            # Sleep for remaining time
+            time.sleep(self.__interval - total_time)
+
+        # Run again
+        self.__runner()
+
     def execute(self):
         """Starts the runner, which will create a scheduled loop of runners."""
         self.__runner()
-
-    def __schedule(self):
-        """Schedule another runner."""
-
-        # Each runner instance will run in a scheduled thread
-        threading.Timer(args.interval, self.__runner).start()
 
 
 if __name__ == "__main__":
