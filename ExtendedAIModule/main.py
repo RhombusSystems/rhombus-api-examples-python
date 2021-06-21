@@ -103,12 +103,12 @@ class Main:
 
         # Get the media URIs from rhombus for our camera, this is done every sequence so that we don't have to worry about federated tokens. 
 	    # These URIs stay the same, but this method will also create our federated tokens
-        uri, token = fetch_media_uris(api_client=self.__api_client, camera_uuid=self.__camera_uuid, duration=120, type=self.__connection_type);
+        uri, token = fetch_media_uris(api_client=self.__api_client, camera_uuid=self.__camera_uuid, duration=120, connection_type=self.__connection_type);
 
         print("Downloading the VOD...");
 
         # Download the mp4 of the last [duration] seconds starting from Now - [duration] seconds ago
-        clip_path, directory_path, start_time = fetch_vod(api_key=self.__api_key,  federated_token=token, http_client=self.__http_client, uri=uri, type=self.__connection_type, duration=self.__interval);
+        clip_path, directory_path, start_time = fetch_vod(api_key=self.__api_key,  federated_token=token, http_client=self.__http_client, uri=uri, connection_type=self.__connection_type, duration=self.__interval);
 
         print("Generating frames...");
 
