@@ -8,8 +8,11 @@ import argparse
 # Import requests to create our http client
 import requests
 
-# Import threading to create infinitely running runner loop
-import threading
+# Import timeit so that we can time execution time
+from timeit import default_timer as timer
+
+# Import time so that we can sleep
+import time
 
 # Import OS to create our resource directory
 import os
@@ -96,7 +99,8 @@ class Main:
     def __runner(self) -> None:
         """Executes the services that will download the clip, classify it, and upload the bounding boxes to Rhombus."""
 
-        self.__schedule()
+        # Start a timer to time our execution time
+        start = timer()
         
         # Get the media URIs from rhombus for our camera, this is done every sequence so that we don't have to worry about federated tokens. 
 	    # These URIs stay the same, but this method will also create our federated tokens
@@ -130,6 +134,21 @@ class Main:
         # Clean the clip in our resource directory
         cleanup(directory=directory_path)
 
+        # End timer
+        end = timer()
+
+        # Get the total execution time
+        total_time = end - start
+
+        # If we are underneath our interval, then we will want to sleep. 
+        # Otherwise if we are over our interval, then that means we are lagging behind and we need to process the next interval immediately
+        if(total_time < self.__interval):
+            # Sleep for remaining time
+            time.sleep(self.__interval - total_time)
+
+        # Run again
+        self.__runner()
+
 
 
     def execute(self):
@@ -153,13 +172,6 @@ class Main:
 
         # Run the main recognizer
         self.__runner()
-
-    def __schedule(self):
-        """Schedule another runner."""
-
-        # Each runner instance will run in a scheduled thread
-        threading.Timer(args.interval, self.__runner).start()
-
 
 if __name__ == "__main__":
     # Get the user's arguments

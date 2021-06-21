@@ -2,7 +2,8 @@
 from typing import Dict
 from typing import Set
 
-# Import OS and IO to open files and write data
+# Import pathlib, OS and IO to open files and write data
+import pathlib
 import os
 import io
 
@@ -83,7 +84,7 @@ def download_faces(api_key: str, api_client: rapi.ApiClient, http_client: reques
 
         # If the directory doesn't exist, then we need to create it
         if(not os.path.exists(dir)):
-            os.mkdir(dir)
+            pathlib.Path(dir).mkdir(parents=True, exist_ok=True)
             
         # Get all of the recent face events for our name
         res = api.get_recent_face_events_for_name(body=rapi.FaceGetRecentFaceEventsForNameWSRequest(face_name=face))
