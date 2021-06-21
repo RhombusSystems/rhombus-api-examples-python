@@ -1,10 +1,17 @@
-import face_recognition
-import pickle;
-import cv2
-import os;
-import glob;
+# Import type hints
+from typing import List
+from typing import Set
 
-def generate_encodings(names: set[str], force: bool = False) -> None:
+# Import OS, glob, and pickle to export and load files
+import os
+import glob
+import pickle
+
+# Import face_recognition and OpenCV for facial recognition
+import face_recognition
+import cv2
+
+def generate_encodings(names: Set[str], force: bool = False) -> None:
     """Generates face encodings for OpenCV using faces downloaded in res
 
     :param names: The list of names to match for so that we can find their corresponding directories. These will follow the pattern res/<NAME>
@@ -12,7 +19,7 @@ def generate_encodings(names: set[str], force: bool = False) -> None:
     """
     # If the user has not asked to force the creation of encodings and the res/face_enc file exists, then we don't need to run this function
     if(os.path.exists("res/face_enc") and not force):
-        return;
+        return
 
     # These lists will hold our names and encodings which will be written to the file
     known_encodings = []
@@ -22,13 +29,13 @@ def generate_encodings(names: set[str], force: bool = False) -> None:
     for name in names:
 
         # Get all of the JPEG face images of the specific name
-        files: list[str] = glob.glob("./res/" + name + "/" + "*.jpg");
+        files: List[str] = glob.glob("./res/" + name + "/" + "*.jpg")
 
         # Loop through all of the files
         for i in range(len(files)):
 
             # Hold our file
-            file = files[i];
+            file = files[i]
 
             # Load the file
             image = cv2.imread(file)
