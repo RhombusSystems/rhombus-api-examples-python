@@ -34,7 +34,7 @@ class licensePlateProject:
     @staticmethod
     def __initalize_argument_parser():
         parser = argparse.ArgumentParser(
-            description= "Gets a report of the recent faces and downloads the pictures of each face.")
+            description= "Gets a report of the recent licenseplates and downloads the pictures of each one.")
         #aruements avaiable for the user to customize
         parser.add_argument('APIkey', type=str, help='Get this from your console')
         parser.add_argument('cameraName', type=str, help='Name of camera in the console')
@@ -176,3 +176,4 @@ class licensePlateProject:
 if __name__ == "__main__":
     engine = licensePlateProject(sys.argv[1:])
     engine.execute()
+   
