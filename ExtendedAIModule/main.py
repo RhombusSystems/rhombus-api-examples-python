@@ -113,7 +113,7 @@ class Main:
         print("Downloading the VOD...")
 
         # Download the mp4 of the last [duration] seconds starting from Now - [duration] seconds ago
-        clip_path, directory_path, _ = fetch_vod(api_key=self.__api_key, federated_token=token,
+        clip_path, directory_path, start_time = fetch_vod(api_key=self.__api_key, federated_token=token,
                                                           http_client=self.__http_client, uri=uri,
                                                           connection_type=self.__connection_type,
                                                           duration=self.__interval)
@@ -126,12 +126,12 @@ class Main:
         print("Classifying Images...")
 
         # Classify all of the frames generated in the vodRes.directoryPath
-        #  boxes = classify_directory(self.__yolo_net, self.__coco_classes, directory_path, start_time, self.__interval)
+        boxes = classify_directory(self.__yolo_net, self.__coco_classes, directory_path, start_time, self.__interval)
 
         print("Sending the data to Rhombus...")
 
         # Send all of our bounding boxes to rhombus
-        #  rhombus_finalizer(self.__api_client, self.__camera_uuid, boxes)
+        rhombus_finalizer(self.__api_client, self.__camera_uuid, boxes)
 
         print("Cleaning up!")
 
