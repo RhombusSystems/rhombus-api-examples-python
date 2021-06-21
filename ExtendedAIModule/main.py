@@ -8,10 +8,11 @@ import argparse
 # Import requests to create our http client
 import requests
 
-# Import threading to create infinitely running runner loop
-#  import threading
-import time
+# Import timeit so that we can time execution time
 from timeit import default_timer as timer
+
+# Import time so that we can sleep
+import time
 
 # Import OpenCV to create our client
 import cv2
@@ -112,7 +113,7 @@ class Main:
         print("Downloading the VOD...")
 
         # Download the mp4 of the last [duration] seconds starting from Now - [duration] seconds ago
-        clip_path, directory_path, start_time = fetch_vod(api_key=self.__api_key, federated_token=token,
+        clip_path, directory_path, _ = fetch_vod(api_key=self.__api_key, federated_token=token,
                                                           http_client=self.__http_client, uri=uri,
                                                           connection_type=self.__connection_type,
                                                           duration=self.__interval)
