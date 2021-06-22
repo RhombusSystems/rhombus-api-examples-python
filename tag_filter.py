@@ -46,10 +46,17 @@ class tag_filter:
         parser.add_argument('-c', '--csv', type = str, help = "Name of CSV File", default = 'tags')
         parser.add_argument('-m', '--movement', type = str, help = 'Filter by the Type of Movement')
         parser.add_argument('-l', '--limit', type = int, help = "Limit the number of movements tallied")
-        parser.add_argument('-s', '--startTime', type = str, help = 'The time at which you want to begin yyyy-mm-dd (0)0:00:00')
-        parser.add_argument('-e', '--endTime', type = str, help = "The time at which you want to end yyyy-mm-dd (0)0:00:00")
-        
+        parser.add_argument('-s', '--startTime', type = str, help = 'Start time fo data collection yyyy-mm-dd (0)0:00:00')
+        parser.add_argument('-e', '--endTime', type = str, help = "End time of data collection yyyy-mm-dd (0)0:00:00")
         return parser
+
+    # return unique values of a list
+    def unique(self, list):
+        unique_lst = []
+        for value in list:
+            if value not in unique_lst:
+                unique_lst.append(value)
+        return unique_lst
 
     # converts the timestamp to ms time
     def milliseconds_time(self, human):
@@ -106,7 +113,8 @@ class tag_filter:
                 address = value['address1'] + ' ' + value['address2']
                 return address
 
-    def tag_data(self):    # returns data that should be put in CSV file
+    # returns data that should be put in CSV file
+    def tag_data(self):   
         endpoint = self.api_url + "/api/proximity/getLocomotionEventsForTag"
         self.tag_name_data = self.tag_name()
         self.uuid = self.tag_name_convert()
@@ -132,50 +140,55 @@ class tag_filter:
         data = json.loads(order_content)
         return data
 
-    def csv_add(self, value):
-        self.csv_data.append([])
-        self.real_name = self.tag_uuid_convert(value['tagUuid'], self.tag_name_data)
-        self.csv_data[self.count].append(self.real_name)
-        lat_1 = round(value['gpsLocation']['lat'], 2)
-        address = self.location_data_print(self.location_data, lat_1)
-        self.csv_data[self.count].append(address)
-        self.csv_data[self.count].append(value['movement'])
-        self.csv_data[self.count].append(self.human_time(value['timestampMs']))
-        self.csv_data[self.count].append(self.count + 1)
-   
-        with open(self.args.csv + '.csv', 'w', newline = '', encoding='UTF8') as f:
-            writer = csv.writer(f)    # create the csv writer
-            writer.writerow(self.header)    # write the header
-            writer.writerows(self.csv_data) # write the data
-
     def execute(self):
         self.header = ['Tag Name', 'Address', 'Movement', 'Date', 'Movement']
-        self.csv_data =[]
         self.data = self.tag_data()  
         self.tag_name_data = self.tag_name()    
         self.location_data = self.locations()
         self.count = 0
-        self.final_list = []
+        big_list = []
 
-        for event in self.data['locomotionEvents']:
+        if 'locomotionEvents' not in self.data:
+            print("Tag name does not exist within organizaton.")
+            return 
+
+        for event in self.data['locomotionEvents']: 
+            small_list = []
             real_uuid = self.tag_name_convert()
             if self.args.name and not event['tagUuid'] == real_uuid:
                 continue
             if self.args.movement and not event['movement'] == self.args.movement:
                 continue
-            # ...
-            self.final_list.append(event)
+            # setting up info to add
+            self.real_name = self.tag_uuid_convert(event['tagUuid'], self.tag_name_data)
+            lat_1 = round(event['gpsLocation']['lat'], 2)
+            address = self.location_data_print(self.location_data, lat_1)
+            # adding info to "small list"
+            small_list.append(self.real_name)
+            small_list.append(address)
+            small_list.append(event['movement'])
+            small_list.append(self.human_time(event['timestampMs']))
+            small_list.append(self.count + 1)
+            self.count += 1
+            # append the small list to a big list (list of lists)
+            big_list.append(small_list)
 
-        if self.args.limit:
-            for event in self.final_list:
-                self.csv_add(event)
-                self.count += 1
-                if self.count == self.args.limit:
-                    break
+        if big_list == []:
+            if self.args.movement:
+                print("No data generated.")
+                print("Make sure that data is available within the specific parameters.")
+
+        # verifying the name of the CSV file
+        if '.csv' in self.args.csv:
+            self.CSV = self.args.csv
         else:
-            for event in self.final_list:
-                self.csv_add(event)
-                self.count += 1
+            self.CSV = self.args.csv + '.csv'
+
+        # once list of lists has been compiled, create the CSV file 
+        with open(self.CSV, 'w', newline = '', encoding='UTF8') as f:
+            writer = csv.writer(f)          # create the csv writer
+            writer.writerow(self.header)    # write the header
+            writer.writerows(big_list)      # write the data
 
 if __name__ == "__main__":
     engine = tag_filter(sys.argv[1:])
