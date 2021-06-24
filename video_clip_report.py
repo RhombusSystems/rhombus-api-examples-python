@@ -46,18 +46,18 @@ class faceVideo:
         parser = argparse.ArgumentParser(
             description= "Takes a clip from the specified time for a specified duration.")
         #aruements avaiable for the user to customize
-        parser.add_argument('--APIkey', type=str, help='Get this from your console', default="9Ts3iQ_HSZGHEqwxZnPKpA")
-        parser.add_argument('--cameraNames', type=str, help='Name of the camera or cameras in the console you want the clips from', default= 'Rhombus HQ - Camera 2, Rhombus HQ - Camera 3')
-        parser.add_argument('-s', '--startTime', type=str, help='Add the end search time in yyyy-mm-dd~(0)0:00:00 or default to 30 seconds before current time', default='2021-06-23~10:15:30')
-        parser.add_argument('-d', '--duration', type=str, help='What is the duration of the clip in seconds you want', default=15)
+        parser.add_argument('APIkey', type=str, help='Get this from your console')
+        parser.add_argument('cameraNames', type=str, help='Name of the camera or cameras in the console you want the clips from')
+        parser.add_argument('-s', '--startTime', type=str, help='Add the end search time in yyyy-mm-dd~(0)0:00:00 or default to 30 seconds before current time')
+        parser.add_argument('-d', '--duration', type=str, help='What is the duration of the clip in seconds you want', default=30)
         parser.add_argument('-de', '--description', type=str, help= 'Is there a description you want to have for the video', default='This is a clip')
         parser.add_argument('-f', '--format', type = str, help = 'Specify the format of the video', choices=('.mov', '.mp4'), default='.mov')
         parser.add_argument('-t', '--title', type=str, help='What is the title  or name of the clip', default='Clip')
         parser.add_argument('-r', '--report', type=str, help='Name the file that the clip and csv will go into', default='Report')
         parser.add_argument('-c', '--csv', type=str, help='What do you want to name the csv', default='report')
         parser.add_argument('-u', '--unidentified', type=bool, help='Do you want to see unidentified face events', default= False)
-        parser.add_argument('-i', '--identified', type=bool, help='Do you want to see identified face events', default=True)
-        parser.add_argument('-hm', '--humanMotion', type=bool, help='Do you want to see human motion', default=True)
+        parser.add_argument('-i', '--identified', type=bool, help='Do you want to see identified face events', default=False)
+        parser.add_argument('-hm', '--humanMotion', type=bool, help='Do you want to see human motion', default=False)
         return parser
 
     #downloads the clip that was made to the computer
