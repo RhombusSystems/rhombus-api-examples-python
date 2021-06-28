@@ -1,0 +1,9 @@
+*.jpg
+RhombusAPI/
+__pycache__/
+res/
+yolo/coco.names
+yolo/yolov3.cfg
+yolo/yolov3.weights
+venv/
+.idea/
