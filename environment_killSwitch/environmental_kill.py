@@ -11,7 +11,7 @@ import subprocess as sp
 #to disable warnings for not verifying host
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-class killSwitch():
+class tempSwitch():
 
     def __init__(self, cli_args):
         arg_parser = self.__initalize_argument_parser()
@@ -23,24 +23,16 @@ class killSwitch():
            "x-auth-scheme": "api-token",
            "Content-Type": "application/json",
            "x-auth-apikey": self.args.APIkey}
-
-        self.media_sess = requests.session()
-        self.media_sess.headers = {
-           "Accept": "application/json",
-           "x-auth-scheme": "api-token",
-           "Content-Type": "application/json",
-           "x-auth-apikey": self.args.APIkey}
         
     @staticmethod
     def __initalize_argument_parser():
         parser = argparse.ArgumentParser(
             description= "Kill Swicth")
         #aruements avaiable for the user to customize
-        parser.add_argument('--APIkey', type=str, help= 'What is your API key', default='9Ts3iQ_HSZGHEqwxZnPKpA')
-        parser.add_argument('--sensor', type=str, help='What is the sensor you want to check', default='jOAFEc32QEyocnU1WnI7hA')
-        parser.add_argument('-a', '--Alias', type=str, help='What is the alias of the string', default='KillSwitch')
+        parser.add_argument('APIkey', type=str, help= 'What is your API key')
+        parser.add_argument('-a', '--Alias', type=str, help='What is the alias of the string')
         parser.add_argument('-i', '--Host', type=str, help='What is the host ip of the strip')
-        parser.add_argument('--Plug', type=int, help='What plug do you want to turn on or off', default=1)
+        parser.add_argument('Plug', type=int, help='What plug do you want to turn on or off')
         parser.add_argument('--hot', type=int, help='What is the highest temperature mark you want to set in farenheit', default= 75)
         parser.add_argument('--cold', type=int, help='What is the ecold temperature mark you want in farenheit', default= 70)
         return parser
@@ -51,7 +43,6 @@ class killSwitch():
             output = sp.getoutput('kasa --strip --host ' + self.args.Host + ' off --index ' + str(self.args.Plug - 1 ))
         elif self.args.Alias:
             output = sp.getoutput('kasa --strip --alias ' + self.args.Alias + ' off --index ' + str(self.args.Plug - 1))
-
 
     # to turn on the plug
     def on (self):
@@ -93,5 +84,5 @@ class killSwitch():
             time.sleep(1)
 
 if __name__ == "__main__":
-    engine = killSwitch(sys.argv[1:])
+    engine = tempSwitch(sys.argv[1:])
     engine.execute()
