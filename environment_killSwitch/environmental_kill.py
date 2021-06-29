@@ -75,8 +75,6 @@ class killSwitch():
         verify=False)
         content = resp.content
         data = json.loads(content)
-        organized = json.dumps(resp.json(), indent=2, sort_keys=True)
-        print(organized)
         for value in data['climateStates']:
             celsius = value['temperatureCelcius']
             return celsius
@@ -85,16 +83,13 @@ class killSwitch():
         running = True
         while running == True:
             celsius = self.climate_data()
-            if celsius == None:
-                print("Processing...")
-            else:
-                farenheit = self.celsius_convert_to_farenheit(celsius)
-                # checks if temp is too hot
-                if farenheit > self.args.hot:
-                    self.kill()
-                #checks if temp is too cold
-                elif farenheit < self.args.cold:
-                    self.on()
+            farenheit = self.celsius_convert_to_farenheit(celsius)
+            # checks if temp is too hot
+            if farenheit > self.args.hot:
+                self.kill()
+            #checks if temp is too cold
+            elif farenheit < self.args.cold:
+                self.on()
             time.sleep(1)
 
 if __name__ == "__main__":
