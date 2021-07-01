@@ -30,32 +30,41 @@ class uploadDirectory:
         ##Upload Faces to prelaod facial ID
         #Parse through CSV or Folder
         uploadedFaces = []
-
-        with open(self.args.addr) as csvInput:
-            inputReader = csv.reader(csvInput)
-            for row in inputReader:
-                faceAddr = str(row[0])#Address of face
-                fileName = faceAddr.split("/")
-                fileName = fileName[len(fileName)-1]#Filename of face
-                
-                #Attempt upload of face
-                files = {"files[]": (fileName, open(faceAddr, "rb"), "image/jpeg")}
-                uploadResponse = self.session.post(self.url+'upload/faces',files=files)
-                #Report unexpected status codes
-                if(uploadResponse.status_code != 201):
-                    print("Error encountered while uploading face:",faceAddr,"(/api/upload/faces)")
-                #Store name and filename for verification            
-                uploadedFaces.append(fileName)
+        try:
+            with open(self.args.addr) as csvInput:
+                inputReader = csv.reader(csvInput)
+                for row in inputReader:
+                    faceAddr = str(row[0])#Address of face
+                    fileName = faceAddr.split("/")
+                    fileName = fileName[len(fileName)-1]#Filename of face
+                    try:
+                        #Attempt upload of face
+                        files = {"files[]": (fileName, open(faceAddr, "rb"), "image/jpeg")}
+                        uploadResponse = self.session.post(self.url+'upload/faces',files=files)
+                        #Report unexpected status codes
+                        if(uploadResponse.status_code != 201):
+                            print("Error encountered while uploading face:",faceAddr,"(/api/upload/faces)")
+                            continue
+                        #Store name and filename for verification            
+                        uploadedFaces.append(fileName)
+                    except FileNotFoundError:#Catch non valid faces, and continue
+                        print(fileName,"is not a valid jpg.")
+                        continue
+        except FileNotFoundError:
+            print("FileNotFoundError: Indicated CSV file is non existent.")
+            return
 
         #Pause to allow faces to be processed
         time.sleep(30)
         ##Check status of uploaded faces
         #record status for output
         uploadStatusResponse = self.session.post(self.url+"face/getUploadedFaces")
-        uploadStatus = json.loads(uploadStatusResponse.text)
-        uploadStatus = uploadStatus["uploadedFaces"]
         if(uploadStatusResponse.status_code != 200):
             print("Error encountered while getting Uploaded Faces (/api/face/getUploadedFaces).")
+
+        uploadStatus = json.loads(uploadStatusResponse.text)
+        uploadStatus = uploadStatus["uploadedFaces"]
+        
 
         #Declare Fields and Populate Rows for output to CSV
         fields = ['Filename','Upload Status','Error Message']
