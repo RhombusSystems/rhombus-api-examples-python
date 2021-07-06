@@ -24,19 +24,12 @@ class List:
             "Content-Type": "application/json",
             "x-auth-apikey": self.args.APIkey}
 
-        self.media_sess = requests.session()
-        self.media_sess.headers = {
-            "Accept": "application/json",
-            "x-auth-scheme": "api-token",
-            "Content-Type": "application/json",
-            "x-auth-apikey": self.args.APIkey}
-
     @staticmethod
     def __initalize_argument_parser():
         parser = argparse.ArgumentParser(
             description= "Gets a report of all of the Users and their emails.")
         #aruements avaiable for the user to customize
-        parser.add_argument('--APIkey', type=str, help='Get this from your console')
+        parser.add_argument('APIkey', type=str, help='Get this from your console')
         parser.add_argument('--csv', type=str, help= 'Name the csv file', default='report')
         parser.add_argument('-r', '--report', type=str, help='Name the folder for csv file and names', default='Report')
         parser.add_argument('-n', '--names', type=str, help='Put a name to filter through the users and get their email.')
@@ -52,11 +45,6 @@ class List:
         verify=False)
         content = resp.content
         data = json.loads(content)
-        organized = json.dumps(resp.json(), indent=2, sort_keys=True)
-        #print(organized)
-        for value in data['users']:
-            print(value['name'])
-            print(value['emailCaseSensitive'])
         return data
 
     def Names(self):
