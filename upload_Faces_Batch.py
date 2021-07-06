@@ -59,6 +59,7 @@ class uploadDirectory:
         ##Check status of uploaded faces
         #record status for output
         uploadStatusResponse = self.session.post(self.url+"face/getUploadedFaces")
+        #Check for unexpected behavior
         if(uploadStatusResponse.status_code != 200):
             print("Error encountered while getting Uploaded Faces (/api/face/getUploadedFaces).")
 
@@ -83,6 +84,7 @@ class uploadDirectory:
                 uploadedFaces.remove(picID)
 
                 #Status returns a boolean, convert to string for output and fill detail info if needed
+                #Faces are rejected if they are not the correct file type or fail to meet requirements
                 status = uploadStatus[i]["success"]
                 if(status):
                     status = " Success"
@@ -102,9 +104,9 @@ class uploadDirectory:
 
         #Select name for report file 
         if(self.args.time):
-            outputFilename = "Face Report("+time.asctime(time.localtime())+").csv"
+            outputFilename = "faceReport("+time.asctime(time.localtime())+").csv"
         else:
-            outputFilename = "Face Report.csv"
+            outputFilename = "faceReport.csv"
         #write report file
         with open(outputFilename, 'w') as csvOutput:
             outputWriter = csv.writer(csvOutput)
