@@ -30,9 +30,8 @@ class List:
             description= "Gets a report of all of the Users and their emails.")
         #aruements avaiable for the user to customize
         parser.add_argument('APIkey', type=str, help='Get this from your console')
-        parser.add_argument('--csv', type=str, help= 'Name the csv file', default='report')
-        parser.add_argument('-r', '--report', type=str, help='Name the folder for csv file and names', default='Report')
-        parser.add_argument('-n', '--names', type=str, help='Put a name to filter through the users and get their email.')
+        parser.add_argument('-c', '--csv', type=str, help= 'Name the csv file', default='csvFile.csv')
+        parser.add_argument('-p', '--path', type=str, help='Path to where the csv will go', default=os.getcwd())
         return parser
 
     def getUsers(self):
@@ -47,16 +46,12 @@ class List:
         data = json.loads(content)
         return data
 
-    def Names(self):
-        self.args.names = self.args.names.replace(", ", ",")
-        self.name_list = self.args.names.split(",")
-
     def csv_add(self, value, data_Users):
         self.csv_data.append([])
         self.name = value['name']
         self.csv_data[self.count].append(self.name)
         self.csv_data[self.count].append(value['emailCaseSensitive'])
-        with open(self.args.report + '/' + self.args.csv + '.csv', 'w', newline = '') as f:
+        with open(self.args.path + '/' + self.args.csv, 'w', newline = '') as f:
             writer = csv.writer(f)     # create the csv writer
             writer.writerow(self.header)    # write the header
             writer.writerows(self.csv_data) # write the data
@@ -66,20 +61,9 @@ class List:
         data_Users = self.getUsers()
         self.header = ['Name', 'Email']
         self.csv_data = []
-        #gets a path and makes a directory file to the path
-        path = os.getcwd()
-        os.mkdir(path + '/' + self.args.report)
-        if self.args.names:
-            self.Names()
-            for value in data_Users['users']:
-                for event in self.name_list:
-                    if event == value['name']:
-                        self.csv_add(value, data_Users)
-                        self.count += 1
-        else:
-            for value in data_Users['users']:
-                self.csv_add(value, data_Users)
-                self.count += 1
+        for value in data_Users['users']:
+            self.csv_add(value, data_Users)
+            self.count += 1
 
 if __name__ == '__main__':
     engine = List(sys.argv[1:])
