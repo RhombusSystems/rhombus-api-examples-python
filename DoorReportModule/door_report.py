@@ -40,7 +40,7 @@ class doorReport:
         parser.add_argument("sensorName", type=str, help='Name of sensor for which information will be collected.')
         parser.add_argument("-s", "--startTime", type=str, help="Start time of data collection yyyy-mm-dd (0)0:00:00")
         parser.add_argument("-e", "--endTime", type=str, help="End time of data collection yyyy-mm-dd (0)0:00:00")
-        parser.add_argument("-f", "--filter", type = str, help = "Filter for data collection", default = None, choices = ['OPEN', 'CLOSED', 'AJAR', None])   
+        parser.add_argument("-f", "--filter", type = str, help = "Filter for data collection", default = None, choices = ['OPEN', 'CLOSED', 'AJAR'])   
         parser.add_argument('-c', '--csv', type = str, help = "Name of CSV File", default = 'doors')
         return parser
 
@@ -161,7 +161,7 @@ class doorReport:
         if self.big_list == []:
             # input must have been invalid if there were no data generated
             print("No data generated.")
-            print("Make sure that data are available within the specific parameters.")
+            print("Make sure that data are available within the specified parameters.")
 
         # verifying the name of the CSV file
         if '.csv' in self.args.csv:
