@@ -60,8 +60,6 @@ class timelapseSaver:
         mediaBaseURL = 'https://media.rhombussystems.com/media/timelapse/'
         #url of the api
         endpoint = mediaBaseURL + clipUuid + '.mp4'
-        print(endpoint)
-
         resp = self.media_sess.get(endpoint,
         verify=False)
         content = resp.content
@@ -127,6 +125,10 @@ class timelapseSaver:
             end = self.milliseconds_time(self.args.endTime)
         else:
             end = int(round(time.time() * 1000))
+
+        if end - start < (60*60*1000):
+            print("Put a span of at least an hour")
+            quit()
         data_camera = self.get_camera_data()
         uuid = self.uuid_converter(data_camera)
         # any parameters
