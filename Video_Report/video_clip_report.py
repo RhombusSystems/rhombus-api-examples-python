@@ -238,9 +238,7 @@ class faceVideo:
         self.data_camera = self.cameraData()
         self.namesCamera()
         self.camera_uuid()
-        print(self.cameraUuids)
         self.clip()
-        print(self.clipUuid)
         while self.progress() == False:
             time.sleep(5)
         self.download()
