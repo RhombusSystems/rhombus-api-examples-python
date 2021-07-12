@@ -37,7 +37,7 @@ class faceProject:
         )
 
         #aruements avaiable for the user to customize
-        parser.add_argument('--APIkey', type=str, help='Get this from your console')
+        parser.add_argument('APIkey', type=str, help='Get this from your console')
         parser.add_argument('-s', '--startTime', type=str, help='Add the end search time in yyyy-mm-dd~(0)0:00:00 or default to 1 hour before current time')
         parser.add_argument('-e', '--endTime', type=str, help='Add the end search time in yyyy-mm-dd~(0)0:00:00 or default to current time')
         parser.add_argument('-f', '--filter', type=str, help= 'Choose a filter', choices=['alert','trusted','named','other'], default='named')
@@ -69,7 +69,7 @@ class faceProject:
         return timestamp
 
     #converts the timestamp to ms time
-    def milliseconds_time(human):
+    def milliseconds_time(self, human):
         # converts human time to ms. the +25200000 is to get it to local time and not GMT
         ms_time = (calendar.timegm(time.strptime(human, '%Y-%m-%d~%H:%M:%S')) * 1000) + 25200000
         return ms_time
@@ -84,8 +84,7 @@ class faceProject:
         resp = self.api_sess.post(endpoint, json=payload,
         verify=False)
         content = resp.content
-        data = json.loads(content)
-        return data
+        self.data_camera = json.loads(content)
 
     #gets the camera_name from the uuid
     def camera_name(self, uuid, data_camera):
@@ -127,8 +126,7 @@ class faceProject:
         self.name = value['faceName']
         self.csv_data[self.count].append(self.name)
         self.csv_data[self.count].append(timestamp)
-        data_camera = self.camera_data()
-        camera = self.camera_name(value['deviceUuid'], data_camera)
+        camera = self.camera_name(value['deviceUuid'], self.data_camera)
         self.csv_data[self.count].append(camera)
         self.thumbnail = self.mediaBaseURL + value['thumbnailS3Key']
         self.saving_img()
@@ -144,6 +142,7 @@ class faceProject:
         self.header = ['Name', 'Date', 'Camera', 'Image File Name']
         self.csv_data = []
         data_recentFaces = self.recent_faces()
+        self.camera_data()
         #gets a path and makes a directory file to the path
         path = os.getcwd()
         os.mkdir(path + '/' + self.args.report)
