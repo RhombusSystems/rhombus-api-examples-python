@@ -5,6 +5,8 @@ from typing import List
 import sys
 import argparse
 
+import json
+
 # Import requests to create our http client
 import requests
 
@@ -21,6 +23,7 @@ import RhombusAPI as rapi
 
 # Import our connection type
 from rhombus_types.connection_type import ConnectionType
+from rhombus_types.events import ExitEvent
 
 # Import some logging utilities
 from logging_utils.colors import LogColors
@@ -28,8 +31,10 @@ from logging_utils.colors import LogColors
 # Import all of our services which will do the heavy lifting
 from rhombus_services.media_uri_fetcher import fetch_media_uris
 from rhombus_services.vod_fetcher import fetch_vod
-from rhombus_services.cleanup import cleanup
 from rhombus_services.arg_parser import parse_arguments
+from rhombus_services.camera_list import get_camera_list
+from rhombus_services.human_event_service import get_human_events
+from rhombus_services.prompt_user import prompt_user
 
 
 class Main:
@@ -75,8 +80,17 @@ class Main:
         self.__http_client = requests.sessions.Session()
 
     def execute(self):
-        """Starts the runner, which will create a scheduled loop of runners."""
+        """Entry Point"""
+        # Get a list of available cameras
+        cam_list = get_camera_list(self.__api_client)
 
+        # Get the selected event
+        selected_event = prompt_user(api_client=self.__api_client, cameras=cam_list)
+
+        # Check for error when getting user input
+        if selected_event == None:
+            print("Invalid input!")
+            return
 
 if __name__ == "__main__":
     # Get the user's arguments

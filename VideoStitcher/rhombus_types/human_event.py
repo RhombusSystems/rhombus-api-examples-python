@@ -36,4 +36,3 @@ class HumanEvent:
         self.dimensions = dimensions
         self.timestamp = timestamp
         self.camera = camera
-

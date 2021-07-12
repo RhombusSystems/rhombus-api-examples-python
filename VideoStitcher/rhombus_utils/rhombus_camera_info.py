@@ -38,5 +38,5 @@ def get_camera_specs(camera_hardware: HardwareVariationEnum) -> RhombusCameraSpe
     elif camera_hardware == HardwareVariationEnum.CAMERA_R200:
         return RhombusCameraSpecs(112, 57)
     else:
-        print(LogColors.WARNING + "Running unsupported camera! Using default FOV and view distance settings!" + LogColors.ENDC)
+        print(LogColors.WARNING + "Running unsupported camera!" + camera_hardware.to_str() + " Using default FOV and view distance settings!" + LogColors.ENDC)
         return RhombusCameraSpecs(112, 57)

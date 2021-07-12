@@ -13,7 +13,7 @@ def get_velocity(a: HumanEvent, b: HumanEvent) -> np.ndarray:
     # Velocity = (a.position - b.position) / (a.timestamp / b.timestamp)
     return (np.subtract(b.position, a.position)) / (b.timestamp - a.timestamp)
 
-def normalize_velocity(a: np.ndarray, threshold: np.ndarray = Vec2(0, 0)):
+def normalize_velocity(a: np.ndarray, threshold: np.ndarray = Vec2(0, 0)) -> np.ndarray:
     """Normalizes a velocity so that its components are either -1, 0, or 1 and nothing in between
 
     :param a: The velocity to normalize
@@ -27,7 +27,7 @@ def normalize_velocity(a: np.ndarray, threshold: np.ndarray = Vec2(0, 0)):
     validate_vec2(threshold)
 
     # If the velocity does not pass the threshold, it will be a 0 in that axis
-    normalized_velocity = Vec2(0, 0) 
+    normalized_velocity: np.ndarray = Vec2(0, 0) 
 
     if a[0] > threshold[0]:
         # If the x velocity is greater than the threshold, we will give the x axis a 1
@@ -44,7 +44,7 @@ def normalize_velocity(a: np.ndarray, threshold: np.ndarray = Vec2(0, 0)):
         normalized_velocity[1] = -1
 
     # Return the normalized vector
-    return normalize_velocity
+    return np.array(normalize_velocity)
 
 def normalize_position(a: np.ndarray, threshold: np.ndarray = Vec2(0, 0)):
     """Normalizes a position so that its components are either -1, 0, or 1 and nothing in between
