@@ -1,7 +1,7 @@
 import numpy as np
 import math
 from rhombus_types.vector import Vec2
-from rhombus_types.matrix import rotate
+from rhombus_types.matrix import rotate, apply
 from rasterization.rasterizer_utils.left_of_line import left_of_line
 from logging_utils.error import NonNormalizedVectorError
 

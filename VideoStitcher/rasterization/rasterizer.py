@@ -119,8 +119,8 @@ def rasterize_cameras(cameras: List[CameraPlot], pixels_per_meter: float, meter_
         for row in range (0, screen_size):
             for column in range(0, screen_size):
                 # If the pixel row hasn't been initialized yet, then we will do that here.
-                if pixels[row] == None:
-                    pixels[row] = list()
+                if row >= len(pixels):
+                    pixels.append(list())
 
                     # And we're just going to push empty pixels to this new array.
                     for _ in range(0, screen_size):
@@ -172,8 +172,8 @@ def rasterize_velocity(exit_event: ExitEvent, capture_radius: float, screen: Scr
     for row in range(0, screen.screen_size):
         for column in range(0, screen.screen_size):
             # If the pixel row hasn't been initialized yet, then we will do that here.
-            if pixels[row] == None:
-                pixels[row] = list()
+            if row >= len(pixels):
+                pixels.append(list())
 
                 # And we're just going to push false pixels to this new array.
                 for _ in range(0, screen.screen_size):
@@ -217,7 +217,8 @@ def get_valid_cameras(cameras: List[Camera], exit_event: ExitEvent, pixels_per_m
 
     # Next we will get the canvas size in meters.
     canvas_size = get_canvas_size(cameras, origin)
-# And then plot all of the cameras we need.
+
+    # And then plot all of the cameras we need.
     camera_plots = list(map(lambda cam: get_camera_plot(cam, origin), cameras))
 
     # Then we will rasterize the cameras.

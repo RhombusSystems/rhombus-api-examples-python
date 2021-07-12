@@ -2,7 +2,6 @@ from typing import List
 import numpy as np
 import math 
 
-from rhombus_types.events import ExitEvent, FinalizedEvent
 from rhombus_types.camera import Camera
 from rhombus_types.vector import Vec2
 

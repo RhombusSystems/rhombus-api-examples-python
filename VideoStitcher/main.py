@@ -38,6 +38,7 @@ from rhombus_services.camera_list import get_camera_list
 from rhombus_services.human_event_service import get_human_events
 from rhombus_services.prompt_user import prompt_user
 from pipeline.detection_pipeline import detection_pipeline
+from pipeline.related_events_pipeline import related_events_pipeline
 
 
 class Main:
@@ -96,8 +97,12 @@ class Main:
             return
 
         res = detection_pipeline(self.__api_client, selected_event.camera, selected_event.object_id, math.floor(selected_event.timestamp / 1000))
+        
+        # If there are more than one exit event found, that means we can continue
+        if len(res) > 0:
+            # Look for related events
+            events = related_events_pipeline(self.__api_client, res, cam_list)
 
-        print(res)
 
 if __name__ == "__main__":
     # Get the user's arguments
