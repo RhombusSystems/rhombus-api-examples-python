@@ -44,7 +44,7 @@ def normalize_velocity(a: np.ndarray, threshold: np.ndarray = Vec2(0, 0)) -> np.
         normalized_velocity[1] = -1
 
     # Return the normalized vector
-    return np.array(normalize_velocity)
+    return normalized_velocity
 
 def normalize_position(a: np.ndarray, threshold: np.ndarray = Vec2(0, 0)):
     """Normalizes a position so that its components are either -1, 0, or 1 and nothing in between

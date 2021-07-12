@@ -3,7 +3,7 @@ from typing import List, Dict
 import RhombusAPI as rapi
 
 from rhombus_types.human_event import HumanEvent
-from rhombus_types.vector import Vec2, validate_vec2
+from rhombus_types.vector import Vec2
 from rhombus_types.camera import Camera
 
 def get_human_events(api_client: rapi.ApiClient, camera: Camera, start_time: int, duration: int) -> Dict[int, List[HumanEvent]]:

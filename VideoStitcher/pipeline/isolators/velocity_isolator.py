@@ -16,7 +16,7 @@ def isolate_velocities(events: Dict[int, List[HumanEvent]], type: EdgeEventsType
     """
 
     # Loop through all of the events
-    for id in events:
+    for id in list(events.keys()):
         es = events[id]
 
         # Declare our velocity
@@ -47,7 +47,7 @@ def isolate_velocities(events: Dict[int, List[HumanEvent]], type: EdgeEventsType
 
         elif type == EdgeEventsType.End:
             # If we are looking for begin events, start from the end and get all of the velocities up to 4 elements or until we run out of human events to get velocities for
-            for i in range(len(es) - 2, max(len(es) - 4, 0), -1):
+            for i in range(len(es) - 2, max(len(es) - 5, -1), -1):
                 # We will get the following event
                 following_event = es[i + 1]
 

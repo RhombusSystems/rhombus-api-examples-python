@@ -9,7 +9,7 @@ def isolate_events_from_length(events: Dict[int, List[HumanEvent]]) -> Dict[int,
     """
 
     # Loop through all of the events
-    for id in events:
+    for id in list(events.keys()):
         es = events[id]
 
         # If the number of events does not pass the threshold, then delete them

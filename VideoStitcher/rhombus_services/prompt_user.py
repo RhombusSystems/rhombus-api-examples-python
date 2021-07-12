@@ -121,7 +121,12 @@ def prompt_user(api_client: rapi.ApiClient, cameras: List[Camera]) -> Union[Rece
 
         camera_uuid = str(input("The camera UUID in which this person appears first > "))
 
-        camera: Union[Camera, None] = next((cam for cam in cameras if [cam.uuid == camera_uuid]), None)
+        camera: Union[Camera, None] = None
+        
+        for cam in cameras:
+            if cam.uuid == camera_uuid:
+                camera = cam
+                break
 
         if camera is None:
             print("Camera UUID not found!")

@@ -1,4 +1,5 @@
 import numpy as np
+import math as math
 from logging_utils.error import NumpyArrayError
 
 def is_mat2(mat: np.ndarray) -> bool:
@@ -22,3 +23,12 @@ def validate_mat2(mat: np.ndarray) -> None:
 
     if not is_mat2(mat):
         raise NumpyArrayError("Not a Mat2!!", "Please make sure you are supplying a Mat2 to this function")
+
+def rotate(theta: float) -> np.ndarray:
+    """Creates a 2x2 rotation matrix
+
+    :param theta: The rotation this matrix will rotate by
+    :return: Returns the resulting 2x2 rotation matrix
+    """
+
+    return np.array([math.cos(theta), -math.sin(theta), math.sin(theta), math.cos(theta)])
