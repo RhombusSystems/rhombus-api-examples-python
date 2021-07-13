@@ -10,6 +10,10 @@ def get_velocity(a: HumanEvent, b: HumanEvent) -> np.ndarray:
     :return: Returns a velocity in permyriad / milisecond between human event `a` and human event `b`
     """
 
+    # Prevent division by 0 error
+    if b.timestamp - a.timestamp == 0: 
+        return Vec2(0, 0)
+
     # Velocity = (a.position - b.position) / (a.timestamp / b.timestamp)
     return (np.subtract(b.position, a.position)) / (b.timestamp - a.timestamp)
 

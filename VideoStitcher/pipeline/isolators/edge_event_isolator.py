@@ -1,5 +1,6 @@
 from typing import Dict, List
 from rhombus_types.human_event import HumanEvent
+from rhombus_environment.environment import Environment
 
 def isolate_edge_events(all_events: Dict[int, List[HumanEvent]]) -> Dict[int, List[HumanEvent]]:
     """Isolates events and only returns events that are at the edge of the camera's viewport
@@ -18,8 +19,8 @@ def isolate_edge_events(all_events: Dict[int, List[HumanEvent]]) -> Dict[int, Li
         event = events[len(events) - 1]
 
         # Edge values
-        small_edge = 0.4
-        large_edge = 1 - 0.4
+        small_edge = Environment.get().edge_event_detection_distance_from_edge
+        large_edge = 1 - Environment.get().edge_event_detection_distance_from_edge
 
         # If the position of the event is above our threshold, then we can add the events to our edge events map
         if event.position[1] < small_edge or event.position[1] > large_edge or event.position[0] < small_edge or event.position[0] > large_edge:

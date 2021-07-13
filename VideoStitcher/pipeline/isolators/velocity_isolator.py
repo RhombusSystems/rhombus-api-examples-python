@@ -90,6 +90,10 @@ def isolate_velocities(events: Dict[int, List[HumanEvent]], type: EdgeEventsType
         # Figure out the winner, and use that as our check
         check = 1 if pos_count > neg_count else -1
 
+        # Avoid division by 0
+        if pos_count == neg_count: 
+            continue
+
         # Here we will accumulate our total velocity in the X axis
         total_velocity_x: float = 0
 
@@ -130,6 +134,10 @@ def isolate_velocities(events: Dict[int, List[HumanEvent]], type: EdgeEventsType
 
         # Figure out the winner, and use that as our check
         check = 1 if pos_count > neg_count else -1
+
+        # Avoid division by 0
+        if pos_count == neg_count: 
+            continue
 
         # Here we will accumulate our total velocity in the Y axis
         total_velocity_y: float = 0

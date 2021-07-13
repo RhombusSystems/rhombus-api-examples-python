@@ -6,6 +6,7 @@ import math
 from rhombus_types.events import ExitEvent, EdgeEventsType, enter_events_from_map
 from rhombus_types.camera import Camera
 from rhombus_services.human_event_service import get_human_events
+from rhombus_environment.environment import Environment
 from pipeline.isolators.velocity_isolator import isolate_velocities
 from pipeline.isolators.event_length_isolator import isolate_events_from_length
 from rasterization.rasterizer import get_valid_cameras
@@ -21,9 +22,10 @@ def related_events_pipeline(api_client: rapi.ApiClient, exit_events: List[ExitEv
     """
     for event in exit_events:    
         # Get a list of valid cameras based on the position of the exit event
-        _cameras: List[Camera] = get_valid_cameras(cameras, event, 3, 300)
+        _cameras: List[Camera] = get_valid_cameras(cameras, event, Environment.get().pixels_per_meter, Environment.get().capture_radius_meters)
 
         print("Looking through cameras")
+
         for camera in _cameras:
             print(camera.uuid)
 
@@ -34,7 +36,7 @@ def related_events_pipeline(api_client: rapi.ApiClient, exit_events: List[ExitEv
         start_time = math.floor(events[len(events) - 1].timestamp / 1000)
 
         # Get the duration in seconds of how far in the future to look for related human events
-        detection_duration = 30
+        detection_duration = Environment.get().related_event_detection_duration_seconds
 
         # Loop through all of the cameras that are valid
         for other_cam in _cameras:

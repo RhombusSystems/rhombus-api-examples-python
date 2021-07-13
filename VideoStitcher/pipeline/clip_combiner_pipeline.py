@@ -8,6 +8,7 @@ import requests
 from rhombus_types.events import FinalizedEvent
 from rhombus_services.vod_fetcher import fetch_vod
 from rhombus_services.media_uri_fetcher import fetch_media_uris
+from rhombus_environment.environment import Environment
 
 from rhombus_types.connection_type import ConnectionType
 
@@ -29,10 +30,10 @@ def download_finalized_event_recursive(api_key: str, http_client: requests.sessi
 
     # We are going to get our start time in seconds (thus divided by 1000) and then we will add a bit of padding to make sure we really download the full clip.
     # If the index is 0 (meaning our first clip) we will add a larger padding than the rest because oftentimes the exit event might not include some of the earlier events
-    start_time = math.floor(event.start_time / 1000 - (4000 / 1000 if index == 0 else 1500 / 1000))
+    start_time = math.floor(event.start_time / 1000 - (Environment.get().clip_combination_edge_padding_miliseconds / 1000 if index == 0 else Environment.get().clip_combination_padding_miliseconds / 1000))
 
     # For the end time we will do the same thing. The end time has padding as well.
-    end_time = math.ceil(event.end_time / 1000 + (4000 / 1000 if event.following_event == None else 1500 / 1000))
+    end_time = math.ceil(event.end_time / 1000 + (Environment.get().clip_combination_edge_padding_miliseconds / 1000 if event.following_event == None else Environment.get().clip_combination_padding_miliseconds / 1000))
 
     # Get the camera UUID
     cam_uuid = event.data[0].camera.uuid
@@ -55,7 +56,7 @@ def download_finalized_event_recursive(api_key: str, http_client: requests.sessi
 
 
 
-def clip_combiner_pipeline(api_key: str, http_client: requests.sessions.Session, api_client: rapi.ApiClient, type: ConnectionType, event: FinalizedEvent, retry_index: int = 0) -> None:
+def clip_combiner_pipeline(api_key: str, http_client: requests.sessions.Session, api_client: rapi.ApiClient, type: ConnectionType, event: FinalizedEvent) -> None:
     """Downloads a finalized event chain and then combines the downloaded clips into one stitched video
 
     :param api_key: The API key for sending requests to Rhombus
@@ -63,7 +64,6 @@ def clip_combiner_pipeline(api_key: str, http_client: requests.sessions.Session,
     :param api_client: The API Client for sending requests to Rhombus
     :param type: Whether to use LAN or WAN for the connection, by default LAN and unless you are on a different connection, you should really just use LAN
     :param event: The event to download the VOD from
-    :param retry_index: The number of times retried to download
     """
 
     # The output directory will be "res/<start_time_in_miliseconds/"

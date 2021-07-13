@@ -1,11 +1,7 @@
-# Import type hints
-from typing import List
-
 import math as math
 
 # Import sys and argparse for cmd args
 import sys
-import argparse
 
 # Import requests to create our http client
 import requests
@@ -22,7 +18,7 @@ from rhombus_types.connection_type import ConnectionType
 from logging_utils.colors import LogColors
 
 # Import all of our services which will do the heavy lifting
-from rhombus_services.arg_parser import parse_arguments
+from rhombus_environment.environment import Environment
 from rhombus_services.camera_list import get_camera_list
 from rhombus_services.prompt_user import prompt_user
 from pipeline.detection_pipeline import detection_pipeline
@@ -45,14 +41,14 @@ class Main:
     __connection_type: ConnectionType
     __http_client: requests.sessions.Session
 
-    def __init__(self, args: argparse.Namespace) -> None:
+    def __init__(self) -> None:
         """Constructor for the Main class, which will initialize all of the clients and arguments
 
         :param args: The parsed user cmd arguments
         """
 
         # Save the cmd args in our runner
-        self.__api_key = args.api_key
+        self.__api_key = Environment.get().api_key
 
         # Create an API Client and Configuration which will be used throughout the program
         config: rapi.Configuration = rapi.Configuration()
@@ -65,7 +61,7 @@ class Main:
         self.__connection_type = ConnectionType.LAN
 
         # If the user specifies -t WAN, then we need to run in WAN mode, however this is not recommended
-        if (args.connection_type == "WAN"):
+        if (Environment.get().connection_type == "WAN"):
             self.__connection_type = ConnectionType.WAN
             print(
                 LogColors.WARNING + "Running in WAN mode! This is not recommended if it can be avoided." + LogColors.ENDC)
@@ -107,8 +103,5 @@ class Main:
 
 
 if __name__ == "__main__":
-    # Get the user's arguments
-    args = parse_arguments(sys.argv[1:])
-
     # Start the main runner
-    Main(args).execute()
+    Main().execute()

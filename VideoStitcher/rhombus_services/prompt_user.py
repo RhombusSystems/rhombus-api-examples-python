@@ -3,6 +3,8 @@ import RhombusAPI as rapi
 
 from rhombus_types.camera import Camera
 from rhombus_services.human_event_service import get_human_events
+from pipeline.isolators.event_length_isolator import isolate_events_from_length
+from rhombus_environment.environment import Environment
 
 import time
 
@@ -85,7 +87,7 @@ def prompt_user(api_client: rapi.ApiClient, cameras: List[Camera]) -> Union[Rece
     recent_human_events: List[RecentHumanEventInfo] = list()
 
     # The duration in seconds in the past to look for recent human events
-    duration = 600
+    duration = Environment.get().suggested_human_event_seconds_since_current_time
 
     # The starting time in seconds (hence the /1000) since epoch where we will start looking for human events
     current_time = round(time.time()) - duration
@@ -96,8 +98,7 @@ def prompt_user(api_client: rapi.ApiClient, cameras: List[Camera]) -> Union[Rece
         human_events = get_human_events(api_client, cam, current_time, duration)
 
         # Collate and isolate the events from length
-        # TODO: Fix this
-        collated_events = human_events
+        collated_events = isolate_events_from_length(human_events);
 
         # Loop through each of the collated events
         for es in collated_events.values():

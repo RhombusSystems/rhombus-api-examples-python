@@ -6,6 +6,7 @@ import functools
 
 from rhombus_types.events import ExitEvent, EdgeEventsType, exit_events_from_map
 from rhombus_services.human_event_service import get_human_events
+from rhombus_environment.environment import Environment
 from pipeline.isolators.edge_event_isolator import isolate_edge_events
 from pipeline.isolators.velocity_isolator import isolate_velocities
 from pipeline.isolators.event_length_isolator import isolate_events_from_length
@@ -36,10 +37,10 @@ def detection_pipeline(api_client: rapi.ApiClient, camera: Camera, object_id: in
     """
 
     # Get the duration of time in seconds to look for human events. This is by default 10 minutes.
-    duration: int = round(10 * 60)
+    duration: int = round(Environment.get().exit_event_detection_duration_seconds)
 
     # A small offset in seconds is good so that we don't accidentally barely miss the object ID. This is by default 30 seconds.
-    offset: int = round(0.5 * 60)
+    offset: int = round(Environment.get().exit_event_detection_offset_seconds)
 
     # Get an array of human events within the timeframe
     res = get_human_events(api_client=api_client, camera=camera, start_time=timestamp - offset, duration=duration)
