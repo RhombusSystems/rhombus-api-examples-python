@@ -50,7 +50,7 @@ class Environment:
         self.exit_event_detection_duration_seconds = int(os.getenv('EXIT_EVENT_DETECTION_DURATION_SECONDS') or 10 * 60)
         self.exit_event_detection_offset_seconds = int(os.getenv('EXIT_EVENT_DETECTION_OFFSET_SECONDS') or 0.5 * 60)
         self.related_event_detection_duration_seconds = int(os.getenv('RELATED_EVENT_DETECTION_DURATION_SECONDS') or 30)
-        self.pixels_per_meter = int(os.getenv('PIXELS_PER_METER') or 10)
+        self.pixels_per_meter = int(os.getenv('PIXELS_PER_METER') or 3)
         self.clip_combination_edge_padding_miliseconds = int(os.getenv('CLIP_COMBINATION_EDGE_PADDING_MILISECONDS') or 4000)
         self.clip_combination_padding_miliseconds = int(os.getenv('CLIP_COMBINATION_PADDING_MILISECONDS ') or 1500)
 
