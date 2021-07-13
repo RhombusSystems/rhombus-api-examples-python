@@ -1,7 +1,7 @@
 import numpy as np
 import math
 from rhombus_types.vector import Vec2
-from rhombus_types.matrix import rotate, apply
+from rhombus_types.matrix import rotate
 from rasterization.rasterizer_utils.left_of_line import left_of_line
 from logging_utils.error import NonNormalizedVectorError
 
@@ -131,9 +131,9 @@ def point_inside_trapezoid(trapezoid: CaptureNetTrapezoid, point: np.ndarray) ->
     """
 
     # We know that the trapezoid's points are going counter clockwise, so we are just going to test that `point` is to the left of each of the lines and if it is then we know `point` is inside of `trapezoid`.
-    l1 = left_of_line(trapezoid.p0, trapezoid.p1, trapezoid.p2)
-    l2 = left_of_line(trapezoid.p1, trapezoid.p2, trapezoid.p2)
-    l3 = left_of_line(trapezoid.p2, trapezoid.p3, trapezoid.p2)
-    l4 = left_of_line(trapezoid.p3, trapezoid.p0, trapezoid.p2)
+    l1 = left_of_line(trapezoid.p0, trapezoid.p1, point)
+    l2 = left_of_line(trapezoid.p1, trapezoid.p2, point)
+    l3 = left_of_line(trapezoid.p2, trapezoid.p3, point)
+    l4 = left_of_line(trapezoid.p3, trapezoid.p0, point)
 
     return l1 and l2 and l3 and l4

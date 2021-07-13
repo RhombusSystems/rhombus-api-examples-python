@@ -21,10 +21,11 @@ def related_events_pipeline(api_client: rapi.ApiClient, exit_events: List[ExitEv
     """
     for event in exit_events:    
         # Get a list of valid cameras based on the position of the exit event
-        _cameras: List[Camera] = get_valid_cameras(cameras, event, 10, 300)
+        _cameras: List[Camera] = get_valid_cameras(cameras, event, 3, 300)
 
         print("Looking through cameras")
-        print(_cameras)
+        for camera in _cameras:
+            print(camera.uuid)
 
         # Get the events
         events = event.events

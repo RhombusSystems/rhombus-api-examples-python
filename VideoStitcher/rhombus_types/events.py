@@ -1,5 +1,5 @@
 # Import type hints
-from typing import List, Dict
+from typing import List, Dict, Union
 
 import numpy as np
 
@@ -77,11 +77,11 @@ class FinalizedEvent:
 
     id: int
     data: List[HumanEvent]
-    following_event: 'FinalizedEvent'
+    following_event: Union['FinalizedEvent', None]
     start_time: int
     end_time: int
 
-    def __init__(self, id: int, data: List[HumanEvent], following_event: 'FinalizedEvent', start_time: int, end_time: int):
+    def __init__(self, id: int, data: List[HumanEvent], following_event: Union['FinalizedEvent', None], start_time: int, end_time: int):
         """Constructor for a finalized event
 
         :param id: The ObjectID of this enter event.

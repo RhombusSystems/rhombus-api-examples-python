@@ -56,7 +56,7 @@ def get_human_events(api_client: rapi.ApiClient, camera: Camera, start_time: int
 
             dimensions = Vec2((box.r - box.l) / 10000, (box.b - box.t) / 10000)
 
-            position = Vec2((box.r + box.l) / 2 / 10000, (box.b + box.t) / 10000)
+            position = Vec2((box.r + box.l) / 2 / 10000, (box.b + box.t) / 2 / 10000)
 
             event = HumanEvent(id=box.object_id, position=position, dimensions=dimensions, timestamp=box.ts, camera=camera)
 

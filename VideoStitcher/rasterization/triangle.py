@@ -57,6 +57,6 @@ def point_inside_triangle(triangle: Triangle, point: np.ndarray) -> bool:
 
     # We know that the triangle's points are going counter clockwise, so we are just going to test that `point` is to the left of each of the lines and if it is then we know `point` is inside of `triangle`.
     l1 = left_of_line(triangle.p0, triangle.p1, point)
-    l2 = left_of_line(triangle.p0, triangle.p1, point)
-    l3 = left_of_line(triangle.p0, triangle.p1, point)
+    l2 = left_of_line(triangle.p1, triangle.p2, point)
+    l3 = left_of_line(triangle.p2, triangle.p0, point)
     return l1 and l2 and l3

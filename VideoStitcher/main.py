@@ -7,16 +7,8 @@ import math as math
 import sys
 import argparse
 
-import json
-
 # Import requests to create our http client
 import requests
-
-# Import timeit so that we can time execution time
-from timeit import default_timer as timer
-
-# Import time so that we can sleep
-import time
 
 sys.path.append('../')
 
@@ -25,20 +17,18 @@ import RhombusAPI as rapi
 
 # Import our connection type
 from rhombus_types.connection_type import ConnectionType
-from rhombus_types.events import ExitEvent
 
 # Import some logging utilities
 from logging_utils.colors import LogColors
 
 # Import all of our services which will do the heavy lifting
-from rhombus_services.media_uri_fetcher import fetch_media_uris
-from rhombus_services.vod_fetcher import fetch_vod
 from rhombus_services.arg_parser import parse_arguments
 from rhombus_services.camera_list import get_camera_list
-from rhombus_services.human_event_service import get_human_events
 from rhombus_services.prompt_user import prompt_user
 from pipeline.detection_pipeline import detection_pipeline
 from pipeline.related_events_pipeline import related_events_pipeline
+from pipeline.related_event_isolator_pipeline import related_event_isolator_pipeline
+from pipeline.clip_combiner_pipeline import clip_combiner_pipeline
 
 
 class Main:
@@ -102,6 +92,18 @@ class Main:
         if len(res) > 0:
             # Look for related events
             events = related_events_pipeline(self.__api_client, res, cam_list)
+
+            # Then isolate those related events
+            events = related_event_isolator_pipeline(events)
+
+            # If there were any finalized events found
+            if len(events) > 0:
+                # Loop through them
+                for event in events:
+
+                    # Final check to make sure there is at least one related event attached
+                    if event.following_event != None:
+                        clip_combiner_pipeline(api_key=self.__api_key, http_client=self.__http_client, api_client=self.__api_client, type=self.__connection_type, event=event)
 
 
 if __name__ == "__main__":

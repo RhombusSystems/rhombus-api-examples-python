@@ -1,7 +1,5 @@
 # Import type hints
 from typing import Dict
-from typing import Tuple
-
 
 # Import requests to download the VOD
 import requests
@@ -10,9 +8,6 @@ import requests
 import pathlib
 import os
 import io
-
-# Import time to get the current time
-import time
 
 # Import ConnectionType to specify what connection we should have to the camera when downloading our data
 from rhombus_types.connection_type import ConnectionType
@@ -40,34 +35,31 @@ def save_clip(headers: Dict[str, str], http_client: requests.sessions.Session, f
     buffer.close()
 
 
-def fetch_vod(api_key: str, federated_token: str, http_client: requests.sessions.Session, uri: str,
-              connection_type: ConnectionType, duration: int = 20) -> Tuple[str, str, int]:
+def fetch_vod(api_key: str, http_client: requests.sessions.Session, federated_token: str,  uri: str,
+              connection_type: ConnectionType, dir: str, file_name: str, start_time: int, end_time: int) -> None:
     """Download a vod to disk. It will be saved in res/<current time in seconds>
 
     :param api_key: The API Key specified by the user
-    :param federated_token: The federated token which will be used to download the files. Without this we would get a 401 authentication error
     :param http_client: The HTTP Client to download the files with which is initialized at startup
+    :param federated_token: The federated token which will be used to download the files. Without this we would get a 401 authentication error
     :param uri: The VOD uri to download from
     :param connection_type: The ConnectionType to the Camera to download the VOD from
-    :param duration: The duration in seconds of the clip to download
-    :return: Returns the path of the downloaded vod mp4 and the directory in which that downloaded mp4 is in.
-             It will also return the timestamp in seconds since epoch of the startTime of the clip
+    :param dir: The directory where the output clip will be placed
+    :param file_name: The name of the file to output
+    :param start_time: The start timestamp in miliseconds in the VOD to start downloading at
+    :param end_time: The end timestamp in miliseconds in the VOD to stop downloading at
     """
-    # Get the starting time in seconds. This will be the current time in seconds since epoch - duration
-    start_time = round(time.time()) - duration
+    duration = end_time - start_time + 1
 
     # We need to replace {START_TIME} and {DURATION} with the correct values in order to properly download the file
     full_uri = uri.replace("{START_TIME}", str(start_time)).replace("{DURATION}", str(duration))
-
-    # The directory where we will place our clip is "<PROJECT_ROOT>/res/<startTime>"
-    dir = "./res/" + str(start_time) + "/"
 
     # If the directory does not already exist, then we need to create it
     if (not os.path.exists(dir)):
         pathlib.Path(dir).mkdir(parents=True, exist_ok=True)
 
     # The path of the clip is dir/clip.mp4 regardless of timestamp. The file is always called clip.mp4
-    path = dir + "clip.mp4"
+    path = dir + file_name
 
     # These headers are necessary to download all of the VODs
     headers = {
@@ -98,6 +90,3 @@ def fetch_vod(api_key: str, federated_token: str, http_client: requests.sessions
 
     # Close the output file
     file.close()
-
-    # Return our data
-    return path, dir, start_time
