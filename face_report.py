@@ -145,7 +145,8 @@ class faceProject:
         self.camera_data()
         #gets a path and makes a directory file to the path
         path = os.getcwd()
-        os.mkdir(path + '/' + self.args.report)
+        if os.path.exists(path + '/' + self.args.report) == False:
+            os.mkdir(path + '/' + self.args.report)
         #checks if there is an arguement for a name to filter and only get instances with them
         if self.args.name:
             final_list = [event for event in data_recentFaces['faceEvents'] if event["faceName"] == self.args.name]
