@@ -1,8 +1,5 @@
 import requests
-from datetime import datetime, timedelta
-import time
 import json
-import calendar
 import csv
 import sys
 import os
@@ -12,7 +9,7 @@ import urllib3
 #to disable warnings for not verifying host
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-class List:
+class UserList:
     def __init__(self, cli_args):
         arg_parser = self.__initalize_argument_parser()
         self.args = arg_parser.parse_args(cli_args)
@@ -30,8 +27,7 @@ class List:
             description= "Gets a report of all of the Users and their emails.")
         #aruements avaiable for the user to customize
         parser.add_argument('APIkey', type=str, help='Get this from your console')
-        parser.add_argument('-c', '--csv', type=str, help= 'Name the csv file', default='csvFile.csv')
-        parser.add_argument('-p', '--path', type=str, help='Path to where the csv will go', default=os.getcwd())
+        parser.add_argument('-p', '--path', type=str, help='Path to and where the csv will go', default= (os.getcwd() + '/' + "csvFile.csv"))
         return parser
 
     def getUsers(self):
@@ -51,7 +47,7 @@ class List:
         self.name = value['name']
         self.csv_data[self.count].append(self.name)
         self.csv_data[self.count].append(value['emailCaseSensitive'])
-        with open(self.args.path + '/' + self.args.csv, 'w', newline = '') as f:
+        with open(self.args.path, 'w', newline = '') as f:
             writer = csv.writer(f)     # create the csv writer
             writer.writerow(self.header)    # write the header
             writer.writerows(self.csv_data) # write the data
@@ -66,5 +62,5 @@ class List:
             self.count += 1
 
 if __name__ == '__main__':
-    engine = List(sys.argv[1:])
+    engine = UserList(sys.argv[1:])
     engine.execute()
