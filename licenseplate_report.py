@@ -1,5 +1,4 @@
 import requests
-from datetime import datetime, timedelta
 import time
 import json
 import calendar
@@ -12,7 +11,7 @@ import urllib3
 #to disable warnings for not verifying host
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-class licensePlateProject:
+class LicensePlateProject:
     def __init__(self, cli_args):
         arg_parser = self.__initalize_argument_parser()
         self.args = arg_parser.parse_args(cli_args)
@@ -150,7 +149,6 @@ class licensePlateProject:
             writer.writerow(self.header)    # write the header
             writer.writerows(self.csv_data) # write the data
 
-
     def execute(self):
         self.count = 0
         self.mediaBaseURL = "https://media.rhombussystems.com/media/faces?s3ObjectKey="
@@ -162,7 +160,8 @@ class licensePlateProject:
         data_recentVehicle = self.recentVehicle()
         #gets a path and makes a directory file to the path
         path = os.getcwd()
-        os.mkdir(path + '/' + self.args.report)
+        if (os.path.exists(path + '/' + self.args.report) == False):
+            os.mkdir(path + '/' + self.args.report)
         if self.args.licenseplate:
             final_list = [event for event in data_recentVehicle['events'] if self.args.licenseplate == event['vehicleLicensePlate']]
             for value in final_list:
@@ -174,5 +173,5 @@ class licensePlateProject:
                 self.count += 1
 
 if __name__ == "__main__":
-    engine = licensePlateProject(sys.argv[1:])
+    engine = LicensePlateProject(sys.argv[1:])
     engine.execute()
