@@ -1,11 +1,7 @@
 import requests
-from datetime import datetime, timedelta
 import time
 import json
-import calendar
-import csv
 import sys
-import os
 import argparse
 import urllib3
 import subprocess as sp
@@ -13,7 +9,7 @@ import subprocess as sp
 #to disable warnings for not verifying host
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-class killSwitch():
+class FaceRecognitionSwitch():
     def __init__(self, cli_args):
         arg_parser = self.__initalize_argument_parser()
         self.args = arg_parser.parse_args(cli_args)
@@ -130,5 +126,5 @@ class killSwitch():
             time.sleep(15)   # wait 15 seconds before each run through
             
 if __name__ == "__main__":
-    engine = killSwitch(sys.argv[1:])
+    engine = FaceRecognitionSwitch(sys.argv[1:])
     engine.execute()
