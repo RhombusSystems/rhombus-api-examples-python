@@ -1,5 +1,4 @@
 import requests
-from datetime import datetime, timedelta
 import time
 import json
 import calendar
@@ -14,7 +13,7 @@ from typing import Dict, Set
 #to disable warnings for not verifying host
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-class faceVideo:
+class FaceVideo:
     processed: Dict[str, Set]
 
     #initializes the argument parser and the headers for media and the api sessions
@@ -47,11 +46,11 @@ class faceVideo:
             description= "Takes a clip from the specified time for a specified duration.")
         #aruements avaiable for the user to customize
         parser.add_argument('APIkey', type=str, help='Get this from your console')
-        parser.add_argument('cameraNames', type=str, help='Name of the camera or cameras in the console you want the clips from')
+        parser.add_argument('cameraNames', type=str, help='Name of the camera or cameras in the console you want the clips from (ex: camera1, camera2, camera3)')
         parser.add_argument('-s', '--startTime', type=str, help='Add the end search time in yyyy-mm-dd~(0)0:00:00 or default to 30 seconds before current time')
         parser.add_argument('-d', '--duration', type=str, help='What is the duration of the clip in seconds you want', default=30)
         parser.add_argument('-de', '--description', type=str, help= 'Is there a description you want to have for the video', default='This is a clip')
-        parser.add_argument('-f', '--format', type = str, help = 'Specify the format of the video', choices=('.mov', '.mp4'), default='.mov')
+        parser.add_argument('-f', '--format', type = str, help = 'Specify the format of the video', choices=('.mov', '.mp4'), default='.mp4')
         parser.add_argument('-t', '--title', type=str, help='What is the title  or name of the clip', default='Clip')
         parser.add_argument('-r', '--report', type=str, help='Name the file that the clip and csv will go into', default='Report')
         parser.add_argument('-c', '--csv', type=str, help='What do you want to name the csv', default='report')
@@ -234,14 +233,17 @@ class faceVideo:
     def execute(self):
         #gets a path and makes a directory file to the path
         path = os.getcwd()
-        os.mkdir(path + '/' + self.args.report)
+        if (os.path.exists(path + '/' + self.args.report) == False):
+            os.mkdir(path + '/' + self.args.report)
         self.data_camera = self.cameraData()
         self.namesCamera()
         self.camera_uuid()
         self.clip()
+        print("Clip has been created ans is finishing rendering in the console before downloading")
         while self.progress() == False:
             time.sleep(5)
         self.download()
+        print("Clip has finished downloading")
         #checks if the user wants any of the csv data before creating one
         if self.args.unidentified == True or self.args.identified == True or self.args.humanMotion == True:
             self.count = 0
@@ -252,5 +254,5 @@ class faceVideo:
                 self.csv_add(value)
 
 if __name__ == "__main__":
-    engine = faceVideo(sys.argv[1:])
+    engine = FaceVideo(sys.argv[1:])
     engine.execute()
