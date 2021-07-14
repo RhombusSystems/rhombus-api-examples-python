@@ -30,7 +30,7 @@ class killSwitch():
         parser = argparse.ArgumentParser(
             description= "Kill Switch")
         #aruements avaiable for the user to customize
-        parser.add_argument('--APIkey', type=str, help='Get this from your console', default='9Ts3iQ_HSZGHEqwxZnPKpA')
+        parser.add_argument('APIkey', type=str, help='Get this from your console')
         parser.add_argument('-a', '--Alias', type=str, help='What is the alias of the string')
         parser.add_argument('-i', '--Host', type=str, help='What is the host ip of the strip')
         parser.add_argument('cameraName', type=str, help='Name of camera')
