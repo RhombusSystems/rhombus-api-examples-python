@@ -1,5 +1,4 @@
 import requests
-from datetime import datetime, timedelta
 import time
 import json
 import sys
@@ -11,7 +10,7 @@ import subprocess as sp
 #to disable warnings for not verifying host
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-class tempSwitch():
+class EnvironmentalSwitch():
 
     def __init__(self, cli_args):
         arg_parser = self.__initalize_argument_parser()
@@ -30,6 +29,7 @@ class tempSwitch():
             description= "Kill Swicth")
         #aruements avaiable for the user to customize
         parser.add_argument('APIkey', type=str, help= 'What is your API key')
+        parser.add_argument('EnvironmentSensor', type=str, help= 'What is the name of your environment sensor to check')
         parser.add_argument('-a', '--Alias', type=str, help='What is the alias of the string')
         parser.add_argument('-i', '--Host', type=str, help='What is the host ip of the strip')
         parser.add_argument('Plug', type=int, help='What plug do you want to turn on or off')
@@ -67,8 +67,9 @@ class tempSwitch():
         content = resp.content
         data = json.loads(content)
         for value in data['climateStates']:
-            celsius = value['temperatureCelcius']
-            return celsius
+            if (self.args.EnvironmentSensor == value['name']):
+                celsius = value['temperatureCelcius']
+                return celsius
 
     def execute(self):
         running = True
@@ -84,5 +85,5 @@ class tempSwitch():
             time.sleep(1)
 
 if __name__ == "__main__":
-    engine = tempSwitch(sys.argv[1:])
+    engine = EnvironmentalSwitch(sys.argv[1:])
     engine.execute()
