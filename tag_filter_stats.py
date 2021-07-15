@@ -38,13 +38,13 @@ class TagFilter:
         # command line arguments for the user
         parser.add_argument('APIkey', type = str, help = "Your API Key")
         parser.add_argument('name', type = str, help = 'Name of the Tag')
+        parser.add_argument("stats", type = bool, help = "Receive statistics (True / False)")
         parser.add_argument('-c', '--csv', type = str, help = "Name of CSV File", default = 'tags')
         parser.add_argument('-m', '--movement', type = str, help = 'Filter by the Type of Movement', default = None, 
                             choices = ["ARRIVAL", "DEPARTURE", "MOVED_SIGNIFICANTLY", "UNKNOWN"])
         parser.add_argument('-l', '--limit', type = int, help = "Limit the number of movements tallied")
         parser.add_argument('-s', '--startTime', type = str, help = 'Start time fo data collection yyyy-mm-dd (0)0:00:00')
         parser.add_argument('-e', '--endTime', type = str, help = "End time of data collection yyyy-mm-dd (0)0:00:00")
-        parser.add_argument("--stats", type = bool, help = "Receive statistics (True / False)")
         parser.add_argument('-t', '--text', type = str, help = 'Name of the text file', default = 'tagstats')
         parser.add_argument('-r', '--report', type = str, help = "Name of the folder", default = 'tagstats_report')
         return parser
@@ -90,7 +90,7 @@ class TagFilter:
         for value in self.tag_name_data['proximityStates']:
             if self.args.name == value['name']:
                 return value['tagUuid']
-    
+
     # converts the location uuid to an address
     def uuid_convert_address(self):
         for value in self.location_data['locations']:
@@ -181,11 +181,11 @@ class TagFilter:
         self.tag_name_data = self.tag_name()    
         self.location_data = self.locations()
 
-        arrival_times = []     # empty list of arrvial times
-        departure_times = []   # empty list of departure times
+        arrival_times = []     # empty list of arrvial times (timestamps)
+        departure_times = []   # empty list of departure times (timestamps)
+        duration_times = []    # empty list of the duration times (timestamps)
         milli_list = []        # empty list of all the times in milliseconds - used for comparison of days
         time_list = []         # empty list of all the times in timestamps - used for comparison of days
-        duration_times = []    # empty list of the duration times 
         i = 0                  # counter for averaging statistics 
 
         self.count = 0    # this will be a count of total events
@@ -261,7 +261,8 @@ class TagFilter:
             file.write("Shortest Duration: {}\n".format(duration_times[0]))   # first HH:MM:SS in list of duration times
             file.write("Longest Duration: {}\n".format(duration_times[-1]))   # second HH:MM:SS in list of duration times
             file.write("Average Duration Time: {}\n".format(self.get_time(duration_avg_seconds))) # timestamp of average duration time 
-        
+
+        # this is writing data to the CSV file 
         for event in self.data['locomotionEvents']: 
             small_list = []  # creating an empty "small list" each time 
             real_uuid = self.tag_name_convert() 
@@ -276,7 +277,7 @@ class TagFilter:
             self.real_name = self.tag_uuid_convert(event['tagUuid'], self.tag_name_data)
             self.loc_uuid = event["locationUuid"]
             address = self.uuid_convert_address()
-            
+
             # adding info to "small list"
             small_list.append(self.real_name)                           # name of tag
             small_list.append(address)                                  # address
@@ -307,4 +308,4 @@ class TagFilter:
 
 if __name__ == "__main__":
     engine = TagFilter(sys.argv[1:])
-    engine.execute()
+    engine.execute() 
