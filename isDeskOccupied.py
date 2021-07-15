@@ -185,14 +185,17 @@ class isDeskOccupied:
             canvas.delete("all")#Clear the Canvas
             canvas.create_image(0, 0, image=img, anchor=tkinter.NW)#Draw Image on Canvas
             selectRect = canvas.create_rectangle(topx, topy, topx, topy,dash=(2,2), fill='', outline='white')#Draw selectRect
+            i = 1
             for area in self.areas:
+                canvas.create_text(area[0],area[1],text = str(i),fill = 'green',anchor=tkinter.NW, font=("Arial",25))
+                i+=1
                 canvas.create_rectangle(area[0], area[1], area[2], area[3], fill='', outline='green',width = 2)#Draw user defined areas
             if self.args.dgui:
                 for area in self.humanMovementBounds:
                     if area[4] == "MOTION_HUMAN":
-                        canvas.create_rectangle(area[0], area[1], area[2], area[3], fill='', dash = (2,2),outline='yellow',width = 2)#If in debug mode, draw motion bounds
+                        canvas.create_rectangle(area[0], area[1], area[2], area[3], fill='',outline='yellow',width = 2)#If in debug mode, draw motion bounds
                     else:
-                        canvas.create_rectangle(area[0], area[1], area[2], area[3], fill='', dash = (2,2),outline='purple',width = 2)#If in debug mode, draw motion bounds
+                        canvas.create_rectangle(area[0], area[1], area[2], area[3], fill='',outline='purple',width = 2)#If in debug mode, draw motion bounds
 
         #two part process for adding a new area to track, triggered by double clicking mouse 1
         def addArea(event):
