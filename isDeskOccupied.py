@@ -24,6 +24,7 @@ class isDeskOccupied:
         #Set a default base URL for api calls
         self.url = "https://api2.rhombussystems.com/api/"
         self.time = time.time()
+        self.endTime = None
         self.areas = []
         self.humanMovementBounds = []
 
@@ -105,45 +106,45 @@ class isDeskOccupied:
         ##Get recent event groups
         payload = {
             "deviceUuid": self.args.uuid,
-            "maxResults": 1 #Only get the msot recent event group
+            "maxResults": 10 #Get 10 most recent policy alerts grouped by time
         }        
         currentEvents = self.session.post(self.url+"event/getPolicyAlertGroupsForDevice",json = payload)
         if currentEvents.status_code != 200:#Check for unexpected status code
             print("Failure to get currentEvents (event/getPolicyAlertGroupsForDevice)")
             return
         currentEvents = json.loads(currentEvents.text)
-        currentEvents = currentEvents["policyAlertGroups"][0]
-        eventEndTime = currentEvents.get("endTime")#Get end time of event group
-        currentEvents = currentEvents.get("policyAlerts")[0]
+        currentEvents = currentEvents["policyAlertGroups"][0]#Get the most recent event group
+        self.endTime = currentEvents.get("endTime")/1000#Get end time of most recent event group in seconds
+        currentEvents = currentEvents.get("policyAlerts")
+        eventUuid = []
 
-        #If human motion triggered an event in the event group, get its UUID
-        if "MOTION_HUMAN" in currentEvents["policyAlertTriggers"]:
-            eventUuid = currentEvents["uuid"]
-        else:
-            print("No Human Presence Identified, all areas are presumed to be unoccupied")
-            return
+        for policyAlert in currentEvents:#For each policy alert in the event Group
+            #If human motion triggered an event in the event group, get its UUID
+            if "MOTION_HUMAN" in policyAlert["policyAlertTriggers"]:
+                eventUuid.append(policyAlert["uuid"])
 
-        ##Use the event UUID to get event groups details, specifically the bounding boxes associated with the event group
-        payload = {
-            "policyAlertUuid": eventUuid
-        }
-        eventDetails = self.session.post(self.url+"event/getPolicyAlertDetails",json=payload)
-        if eventDetails.status_code != 200:#Check for unexpected status code
-            print("Failure to get eventDetails (event/getPolicyAlertDetails)")
-            return
-        eventDetails = json.loads(eventDetails.text)["policyAlert"]["boundingBoxes"]
+        ##Use the event UUIDs to get event groups details, specifically the bounding boxes associated with the event group
+        for uuid in eventUuid:
+            payload = {
+                "policyAlertUuid": uuid
+            }
+            eventDetails = self.session.post(self.url+"event/getPolicyAlertDetails",json=payload)
+            if eventDetails.status_code != 200:#Check for unexpected status code
+                print("Failure to get eventDetails (event/getPolicyAlertDetails)")
+                return
+            eventDetails = json.loads(eventDetails.text)["policyAlert"]["boundingBoxes"]
 
-        #convert event bounds to pixel coordinates and store
-        for box in eventDetails:
-            #Convert Permyiads to coordinates -> (value/10000) * total dimension
-            left = int((box.get("left")/10000) * 1920)
-            right = int((box.get("right")/10000) * 1920)
-            top = int((box.get("top")/10000) * 1080)
-            bottom = int((box.get("bottom")/10000) * 1080)
-            self.humanMovementBounds.append([left,top,right,bottom])
-
+            #convert event bounds to pixel coordinates and store
+            for box in eventDetails:
+                #Convert Permyiads to coordinates -> (value/10000) * total dimension
+                left = int((box.get("left")/10000) * 1920)
+                right = int((box.get("right")/10000) * 1920)
+                top = int((box.get("top")/10000) * 1080)
+                bottom = int((box.get("bottom")/10000) * 1080)
+                activity = box.get("activity")
+                self.humanMovementBounds.append([left,top,right,bottom,activity])
         ##Compare user defined workspaces to Human Movement Bounding Boxes
-        print("\nChecking occupancy as of %i minutes ago" % int((self.time-(eventEndTime/1000))/60))
+        print("\nChecking occupancy as of %i minutes ago" % int((self.time-self.endTime)/60))
         print("[-1: Area unoccupied | 0: Area may be occupied | 1: Area occupied]\n")
         i = 1
         for area in self.areas:
@@ -188,7 +189,10 @@ class isDeskOccupied:
                 canvas.create_rectangle(area[0], area[1], area[2], area[3], fill='', outline='green',width = 2)#Draw user defined areas
             if self.args.dgui:
                 for area in self.humanMovementBounds:
-                    canvas.create_rectangle(area[0], area[1], area[2], area[3], fill='', dash = (2,2),outline='yellow',width = 2)#If in debug mode, draw motion bounds
+                    if area[4] == "MOTION_HUMAN":
+                        canvas.create_rectangle(area[0], area[1], area[2], area[3], fill='', dash = (2,2),outline='yellow',width = 2)#If in debug mode, draw motion bounds
+                    else:
+                        canvas.create_rectangle(area[0], area[1], area[2], area[3], fill='', dash = (2,2),outline='purple',width = 2)#If in debug mode, draw motion bounds
 
         #two part process for adding a new area to track, triggered by double clicking mouse 1
         def addArea(event):
@@ -244,7 +248,7 @@ class isDeskOccupied:
         ##Get a frame to serve as the backdrop of UI
         payload = {
         "cameraUuid": self.args.uuid,
-        "timestampMs": (self.time)*1000#Gets Most recent frame from specified camera
+        "timestampMs": (self.endTime)*1000#Gets Frame from end of most recent event group
         }
         frameURI = self.session.post(self.url+"video/getExactFrameUri", json = payload)
         if frameURI.status_code != 200:#Check for unexpected status code
@@ -287,7 +291,6 @@ class isDeskOccupied:
                 self.removeArea()
 
         self.checkAreas()#Report occupied status of areas
-
         if self.args.dgui:#Display debug GUI
             self.gui()
         return
