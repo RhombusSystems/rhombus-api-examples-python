@@ -70,6 +70,8 @@ class EnvironmentalSwitch():
             if (self.args.EnvironmentSensor == value['name']):
                 celsius = value['temperatureCelcius']
                 return celsius
+        print("Error: No environment sensor was found with that name")
+        quit()
 
     def execute(self):
         running = True
