@@ -18,17 +18,7 @@ import argparse
 
 data_type = 'Environment' 
 
-def get_datetime(df):
-    '''
-    Reformats Time and Date column to one DATETIME column.
-    Returns updates Date column.
-    '''
-    date, time = df["Date"], df["Time"].str.split('-').str[0]
-    
-    df["Date"]= date+"T"+time
-    del df["Time"]
 
-    return df["Date"]
 
 def C_to_F(temp):
     '''
@@ -82,29 +72,12 @@ def EV_grab(api_key,device_id):
 
     return get_data(url,payload, headers,data_type)
 
-def find_associated_camera(api_key):
-    '''
-    Finds the associated cameras to the environmental sensor.
-    Returns list of camera IDs.
-    '''
-    url = "https://api2.rhombussystems.com/api/climate/getMinimalClimateStateList"
 
-    headers = {
-        "Accept": "application/json",
-        "x-auth-scheme": "api-token",
-        "Content-Type": "application/json",
-        "x-auth-apikey": api_key
-    }
-
-    response = requests.request("POST", url, headers=headers)
-    data = response.json()
-    climate_status = data['climateStates'] # dictionary of all data.
-    camera_id_list = climate_status[0].get("associatedCameras") # Grabs associatedCamera values from dictionary
-    return camera_id_list
 
 def main():
     # Defaults to F
     convert = True
+    url = "https://api2.rhombussystems.com/api/climate/getMinimalClimateStateList"
 
     # Parser. Gets arguements for test.
     parser = argparse.ArgumentParser(
@@ -151,7 +124,7 @@ def main():
     # Get amount of anomalies for video footage via percent of anomalies user wants
     temp_footage_anomalies, temp_footage_dates, hum_footage_anomalies, hum_footage_dates = wanted_anomaly_footage(perc_anomalies,temp_a,hum_a,"Temperature","Humidity")
 
-    associated_cameras = find_associated_camera(args.api_key)
+    associated_cameras = find_associated_camera(args.api_key, url,"climateStates")
 
     # Grab footage from wanted % of anomalies and creates seek points
     for camera_id in associated_cameras:
@@ -167,7 +140,7 @@ def main():
             seek_points(start_time, camera_id, args.api_key)
 
     # Create Report
-    create_report(temp_graph,hum_graph,data_type,temp_footage_anomalies,hum_footage_anomalies)
+    create_report_2var(temp_graph,hum_graph,data_type,temp_footage_anomalies,hum_footage_anomalies)
 
     
 if __name__ == "__main__":

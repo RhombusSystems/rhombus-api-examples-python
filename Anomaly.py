@@ -41,6 +41,18 @@ def clean_date(column, date_column):
         clean_a = [datetime.datetime.strptime(elem, '%Y-%m-%dT%H:%M:%S %Z') for elem in date_column] # clean up datetime format
     return clean_a
 
+def get_datetime(df):
+    '''
+    Reformats Time and Date column to one DATETIME column.
+    Returns updates Date column.
+    '''
+    date, time = df["Date"], df["Time"].str.split('-').str[0]
+    
+    df["Date"]= date+"T"+time
+    del df["Time"]
+
+    return df["Date"]
+
 def get_time():
     ''' 
     Finds current time and 30 days prior in milliseconds. Also converts into date format.
@@ -91,6 +103,24 @@ def wanted_anomaly_footage(perc_anomaly, column1, column2,c1_name,c2_name):
 
     return column1_anomalies,c1_date, column2_anomalies, c2_date
 
+def find_associated_camera(api_key,url,type_state):
+    '''
+    Finds the associated cameras to the environmental sensor.
+    Returns list of camera IDs.
+    '''
+    headers = {
+        "Accept": "application/json",
+        "x-auth-scheme": "api-token",
+        "Content-Type": "application/json",
+        "x-auth-apikey": api_key
+    }
+
+    response = requests.request("POST", url, headers=headers)
+    data = response.json()
+    type_status = data[type_state] # dictionary of all data.
+    camera_id_list = type_status[0].get("associatedCameras") # Grabs associatedCamera values from dictionary
+    return camera_id_list
+
 def footage_call(column_footage_dates,api_key, device_id, duration,column):
     '''
     Call to grab footage based on datetime given.
@@ -121,7 +151,7 @@ def grab_footage(api_key, device_id, duration,start_time,outlier_num,column,dire
     os.system(f'python3 copy_footage_to_local_storage.py --api_key {api_key} --device_id {device_id} --output {output_path} --start_time {start_time} --duration {duration}')
     
 
-def create_report(graph_fname1, graph_fname2,data_type,column1_a,column2_a):
+def create_report_2var(graph_fname1, graph_fname2,data_type,column1_a,column2_a):
     '''
     Creates report of anomalies. 
     Report contains graphs, list of user specified anomaly values, and path to footage.
@@ -143,6 +173,33 @@ def create_report(graph_fname1, graph_fname2,data_type,column1_a,column2_a):
     document.add_section()
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
         document.add_paragraph(f'List of anomaly datetimes and values:\n{column1_a}\n{column2_a}')
+    
+    # Adds footage path
+    document.add_section()
+    document.add_paragraph(f"Footage of anomaly found at: {video_path}")
+    document.save(f'{data_type}AnomalyReport.docx')
+
+def create_report_1var(graph_fname1,data_type,column1_a):
+    '''
+    Creates report of anomalies. 
+    Report contains graphs, list of user specified anomaly values, and path to footage.
+    Returns None.
+    '''
+    # Get path to video footage.
+    video_path = os.getcwd()
+
+    # Creates document and heading
+    document = Document()
+    document.add_heading(text=(f'{data_type} Anomaly Report'))
+    
+    # Adds Graphs
+    document.add_paragraph('Graph of outliers')
+    document.add_picture(video_path+'/'+graph_fname1)
+    
+    # Adds list of anomalies
+    document.add_section()
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+        document.add_paragraph(f'List of anomaly datetimes and values:\n{column1_a}')
     
     # Adds footage path
     document.add_section()
@@ -226,6 +283,46 @@ def isolation_forest_test(df,data,clean_dates,column1,column2):
     column2_fname = visualize(df, clean_dates, column2_clean_a, column2_a,column2)  
 
     return column1_a, column1_clean_a, column1_fname,column2_a, column2_clean_a, column2_fname
+
+def iqr_test(df,column,data_type):
+    q1 = column.quantile(0.25)
+    q3 = column.quantile(0.75)
+
+    iqr = q3 - q1
+    iqr = iqr * 1.5
+
+    clean_data_iqr = [] # no outliers
+    diff_outliers_iqr = []   # has outliers
+    diff_outlier_date = []
+
+    count = 0
+    for entry in column:
+        if (entry > q3 + iqr) or (entry < q1 - iqr):
+        
+            date = df["Date"].values[count-1]
+            diff_outlier_date.append(date)
+            diff_outliers_iqr.append(entry)
+        else:
+            clean_data_iqr.append(entry)
+
+        count+=1
+    diff_clean_dates = [datetime.datetime.strptime(elem, '%Y-%m-%dT%H:%M:%S') for elem in df["Date"]]
+    diff_outlier_dates = [datetime.datetime.strptime(elem, '%Y-%m-%dT%H:%M:%S') for elem in diff_outlier_date]
+
+    plt.figure(figsize=(6, 8))
+    plt.plot(diff_clean_dates, df['Door opened (sec)'],label='Difference Data')
+    plt.xlabel('Date time')
+    plt.ylabel('diff')
+    _=plt.xticks(rotation=25)    
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
+    plt.title(f'Time Series of {data_type} Data by date time of search');
+    print(f'Found {len(diff_outliers_iqr)} outliers.')
+    plt.scatter(diff_outlier_dates,diff_outliers_iqr, color='red', label='Outliers')
+    plt.legend(loc='upper left', frameon=True)
+
+    plt.savefig(f"{data_type}_graph.jpg")
+
+    return diff_outliers_iqr, diff_outlier_date, f"{data_type}_graph.jpg"
 
 def seek_points(time_ms, cameraUuid, api_key):
     '''

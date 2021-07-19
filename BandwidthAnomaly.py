@@ -38,7 +38,7 @@ def band_grab(api_key,device_id,):
     Grabs data from given parameters via API and writes to a CSV file
     Returns filename.
     '''
-    data_type = 'Bandwidth'
+    
     current_milli, thirty_days_ago, current_milli_date, thirty_days_ago_date = get_time()
 
     url = "https://api2.rhombussystems.com/api/export/countReports"
@@ -107,7 +107,7 @@ def main():
     down_start = footage_call(download_footage_dates, args.api_key, args.device_id, args.duration,"Download")
     
     # Create Report
-    create_report(up_graph,down_graph,data_type,upload_footage_anomalies,download_footage_anomalies)
+    create_report_2var(up_graph,down_graph,data_type,upload_footage_anomalies,download_footage_anomalies)
 
 
 if __name__ == "__main__":
