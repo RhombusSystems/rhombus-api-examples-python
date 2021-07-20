@@ -22,7 +22,7 @@
 
 import numpy as np
 
-import math as math
+import math
 
 from rhombus_utils.math import degrees_to_radians
 

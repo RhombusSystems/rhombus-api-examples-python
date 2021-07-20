@@ -21,7 +21,7 @@
 ###################################################################################
 
 import numpy as np
-import math as math
+import math
 from logging_utils.error import NumpyArrayError
 
 def is_mat2(mat: np.ndarray) -> bool:

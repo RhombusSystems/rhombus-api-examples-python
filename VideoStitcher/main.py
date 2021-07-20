@@ -20,7 +20,7 @@
 # SOFTWARE.                                                                       #
 ###################################################################################
 
-import math as math
+import math
 
 # Import sys and argparse for cmd args
 import sys

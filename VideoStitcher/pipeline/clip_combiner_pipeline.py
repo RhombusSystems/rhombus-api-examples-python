@@ -21,7 +21,7 @@
 ###################################################################################
 
 import RhombusAPI as rapi
-import math as math
+import math
 import io
 import os
 import pathlib
@@ -109,6 +109,6 @@ def clip_combiner_pipeline(api_key: str, http_client: requests.sessions.Session,
         vidlist.close()
 
     # Run the FFMpeg command to combine the downloaded mp4s based on the vidlist.txt
-    subprocess.run(["ffmpeg", "-f", "concat", "-safe", "0", "-i", dir + "vidlist.txt", "-c", "copy", dir+ "output.mp4"])
+    subprocess.run(["ffmpeg", "-f", "concat", "-safe", "0", "-i", dir + "vidlist.txt", "-c", "copy", dir+ "output.mp4"], stdout=subprocess.DEVNULL)
 
     print("Output stitched video in directory " + dir)

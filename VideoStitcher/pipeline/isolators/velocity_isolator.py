@@ -27,7 +27,7 @@ from rhombus_types.events import EdgeEventsType
 from rhombus_utils.velocity import normalize_velocity, normalize_position, get_velocity
 from rhombus_types.vector import Vec2, vec2_compare
 import numpy as np
-import math as math
+import math
 
 def isolate_velocities(events: Dict[int, List[HumanEvent]], type: EdgeEventsType) -> Dict[int, List[HumanEvent]]:
     """Isolates events and only returns events that pass a certain minimum velocity and have a direction that matches the edge location of the event

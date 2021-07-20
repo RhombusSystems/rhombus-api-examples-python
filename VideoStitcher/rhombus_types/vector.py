@@ -21,7 +21,7 @@
 ###################################################################################
 
 from typing import Union
-import math as math
+import math
 
 import numpy as np
 from logging_utils.error import NumpyArrayError

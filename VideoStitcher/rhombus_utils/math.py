@@ -20,7 +20,7 @@
 # SOFTWARE.                                                                       #
 ###################################################################################
 
-import math as math
+import math
 
 def degrees_to_radians(degrees: float) -> float:
     """Converts degrees to radians
