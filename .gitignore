@@ -3,3 +3,4 @@ RhombusAPI/
 __pycache__/
 res/
 .env
+*.DS_Store
