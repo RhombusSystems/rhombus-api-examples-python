@@ -4,8 +4,8 @@ import sys
 import json
 from datetime import datetime, timedelta
 import time
-
-class test:
+#This script runs a quick report on the status of all cameras in an organization, report includes name,uuid,status and details if there are any
+class cameraStatus:
     #Set up workspace for API calls to Rhombus Systems
     def __init__(self,args):
         #Initialize argument parser and parse command line arguments
@@ -38,10 +38,14 @@ class test:
                         continue #skip to next camera without storing other data
                 status = camera["healthStatus"]
                 detail = camera["healthStatusDetails"]
+                if detail == "NONE":
+                    detail = ''
+                else:
+                    detail = " - " + detail
                 name = camera["name"]
                 #This segment could be quickly expanded to report many more fields
                 
-                print(name + "(" + uuid + "): " + status + " - " + detail)
+                print(name + "(" + uuid + "): " + status + detail)
 
                 ##If camera is offline, get uptime information for a basic report
                 if(status == "RED"):
@@ -78,5 +82,5 @@ class test:
         return argParser
         
 if __name__ == "__main__":
-    engine = test(sys.argv[1:])
+    engine = cameraStatus(sys.argv[1:])
     engine.getStatus()
