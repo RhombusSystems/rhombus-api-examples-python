@@ -157,5 +157,5 @@ class UploadDirectory:
         return
 
 if __name__ == "__main__":
-    engine = uploadDirectory(sys.argv[1:])
+    engine = UploadDirectory(sys.argv[1:])
     engine.execute()
