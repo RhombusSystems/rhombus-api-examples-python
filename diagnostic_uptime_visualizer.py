@@ -5,7 +5,7 @@ import sys
 import csv
 import matplotlib.pyplot as plt
 
-class upTime:
+class UpTime:
     #Set up workspace for API calls to Rhombus Systems
     def __init__(self,args):
         #Initialize argument parser
@@ -130,5 +130,5 @@ class upTime:
         plt.show()#Display graph
 
 if __name__ == "__main__":
-    engine = upTime(sys.argv[1:])
+    engine = UpTime(sys.argv[1:])
     engine.uptimeVisualizer()
