@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 import sys
 
-class sharedMediaReport:
+class SharedMediaReport:
     #Set up workspace for API calls to Rhombus Systems
     def __init__(self,args):
         #Initialize argument parser
@@ -99,5 +99,5 @@ class sharedMediaReport:
         else:
             print("\tNo Shared Timelapse Groups")
 if __name__ == "__main__":
-    engine = sharedMediaReport(sys.argv[1:])
+    engine = SharedMediaReport(sys.argv[1:])
     engine.execute()
