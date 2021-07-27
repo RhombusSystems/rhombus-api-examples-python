@@ -8,7 +8,7 @@ import os
 import tkinter
 from PIL import Image, ImageTk
 
-class isDeskOccupied:
+class IsDeskOccupied:
 
     #Set up workspace for API calls to Rhombus Systems
     def __init__(self,args):
@@ -299,5 +299,5 @@ class isDeskOccupied:
         return
 
 if __name__ == "__main__":
-    engine = isDeskOccupied(sys.argv[1:])
+    engine = IsDeskOccupied(sys.argv[1:])
     engine.execute()
