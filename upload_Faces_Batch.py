@@ -6,7 +6,7 @@ import csv
 import time
 import os
 
-class uploadDirectory:
+class UploadDirectory:
     #Set up workspace for API calls to Rhombus Systems
     def __init__(self,args):
         #Initialize argument parser
