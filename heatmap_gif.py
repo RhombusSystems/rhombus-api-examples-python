@@ -9,7 +9,7 @@ import numpy
 import matplotlib.pyplot
 
 import imageio
-class heatmapGif:
+class HeatmapGif:
 #Set up workspace for API calls to Rhombus Systems
     def __init__(self,args):
         #Initialize argument parser
