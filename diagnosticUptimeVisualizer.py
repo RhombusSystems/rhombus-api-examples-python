@@ -25,9 +25,9 @@ class upTime:
     #Define arguments which the user may be prompted for
     @staticmethod
     def __initArgParser():
-        argParser = argparse.ArgumentParser(description='')
-        argParser.add_argument("apiKey")
-        argParser.add_argument("--timespan")#Timespan in hours prior to current time to display, default value is 24 hours
+        argParser = argparse.ArgumentParser(description='Creates and displays a visual representation of sensor uptime within an organizatiopn over a given timespan')
+        argParser.add_argument("apiKey", help = 'This is your individual Rhombus Console API Key')
+        argParser.add_argument("--timespan", help = 'Hours prior to the current time to include in visual (Default value is 24)')
         return argParser
 
     def uptimeVisualizer(self):
