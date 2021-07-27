@@ -83,5 +83,5 @@ class HeatmapGif:
         os.remove("heatMap.png")
         return
 if __name__ == "__main__":
-    engine = heatmapGif(sys.argv[1:])
+    engine = HeatmapGif(sys.argv[1:])
     engine.execute()
