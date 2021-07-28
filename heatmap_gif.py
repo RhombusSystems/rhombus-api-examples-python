@@ -7,7 +7,6 @@ import json
 import seaborn
 import numpy
 import matplotlib.pyplot
-
 import imageio
 class HeatmapGif:
 #Set up workspace for API calls to Rhombus Systems
@@ -37,6 +36,8 @@ class HeatmapGif:
         endTime = int(self.args.endTime)
         curTime = stepSize+prevTime
         
+        steps = (endTime-curTime)/stepSize
+        i = 0
         ##Setup writer to output heatmap.gif
         with imageio.get_writer('./heatmap.gif',mode='I') as writer:
             while(curTime <= endTime):
@@ -79,6 +80,9 @@ class HeatmapGif:
                 #Increment the time slot
                 prevTime = curTime
                 curTime += stepSize
+                print(str(int((i/steps)*100))+"%")
+                i+=1
+        print("Done!")
         #Cleanup
         os.remove("heatMap.png")
         return
