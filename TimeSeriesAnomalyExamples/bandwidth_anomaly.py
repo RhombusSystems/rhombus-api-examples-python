@@ -6,11 +6,16 @@ and finds anomolies for Uploads and Download Bandwidth within the past 30 day.
 
 Parameters: required -a API_KEY 
             required -d DEVICE_ID
+            optional -p percent of anomalies wanted (default 5 percent)
 
 Downloads .docx report file, anomaly footage, and csv of 30 days to current directory. 
  
+Command Line Input: 
+    basic case: python3 bandwidth_anomaly.py -a {API_KEY} -d {DEVICE_ID} 
+    percent_anomaly case: python3 bandwidth_anomaly.py -a {API_KEY} -d {DEVICE_ID} -p {% number of anomalies}
+
 '''
-from Anomaly import *
+from anomaly_util import *
 import pandas as pd
 import datetime
 import argparse

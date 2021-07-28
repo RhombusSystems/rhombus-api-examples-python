@@ -121,24 +121,6 @@ def find_associated_camera(api_key,url,type_state):
     camera_id_list = type_status[0].get("associatedCameras") # Grabs associatedCamera values from dictionary
     return camera_id_list
 
-def footage_call(column_footage_dates,api_key, device_id, duration,column):
-    '''
-    Call to grab footage based on datetime given.
-    Returns start_time; grab_footage() downloads footage to current directory.
-    '''
-    outlier_num = 1
-    start_time = []
-    directory = os.getcwd() # currrent directory
-
-    # Loops through multiple footage dates wanted calling grab_footage()
-    for date in column_footage_dates:
-        clean_time = round(date.timestamp())
-        start_time.append(clean_time)
-        grab_footage(api_key, device_id, duration, clean_time,outlier_num,column,directory)
-        outlier_num += 1
-    return start_time
-    
-
 def grab_footage(api_key, device_id, duration,start_time,outlier_num,column,directory):
     '''
     Runs copy_footage_to_local_storage.py in sub-terminal and downloads footage.
@@ -147,9 +129,31 @@ def grab_footage(api_key, device_id, duration,start_time,outlier_num,column,dire
     # Creates path for copy_footage_to_local_storage.py to output the footage to.
     output_path = directory + f'/output{column}{outlier_num}.mp4'
 
-    # Running copy_footage_to_local_storage.pu
+    # Running copy_footage_to_local_storage.py
     os.system(f'python3 copy_footage_to_local_storage.py --api_key {api_key} --device_id {device_id} --output {output_path} --start_time {start_time} --duration {duration}')
+
     
+    
+
+def footage_call(column_footage_dates,api_key, device_id, duration,column):
+    '''
+    Call to grab footage based on datetime given.
+    Returns start_time; grab_footage() downloads footage to current directory.
+    '''
+    outlier_num = 1
+    start_time = []
+    directory = os.getcwd() # currrent directory
+    os.chdir("..")
+
+    # Loops through multiple footage dates wanted calling grab_footage()
+    for date in column_footage_dates:
+        clean_time = round(date.timestamp())
+        start_time.append(clean_time)
+        grab_footage(api_key, device_id, duration, clean_time,outlier_num,column,directory)
+        outlier_num += 1
+    os.chdir(directory)
+    return start_time
+
 
 def create_report_2var(graph_fname1, graph_fname2,data_type,column1_a,column2_a):
     '''

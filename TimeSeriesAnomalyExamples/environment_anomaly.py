@@ -7,18 +7,22 @@ and finds anomolies for Temperature and Humidity within the past 30 day.
 Parameters: required -a API_KEY 
             required -d DEVICE_ID
             optional -c converts to CELCIUS (default F)
+            optional -p percent of anomalies wanted (default 5 percent)
 
 Downloads .docx report file, anomaly footage, and csv of 30 days to current directory. 
 
+Command Line Input: 
+    basic case: python3 environment_anomaly.py -a {API_KEY} -d {DEVICE_ID} 
+    celcius case: python3 environment_anomaly.py -a {API_KEY} -d {DEVICE_ID} -c 
+    percent_anomaly case: python3 environment_anomaly.py -a {API_KEY} -d {DEVICE_ID} -p {% number of anomalies}
 '''
-from Anomaly import *
+
+from anomaly_util import *
 import pandas as pd
 import datetime
 import argparse
 
 data_type = 'Environment' 
-
-
 
 def C_to_F(temp):
     '''

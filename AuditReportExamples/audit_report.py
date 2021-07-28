@@ -8,95 +8,15 @@ Parameters: required -a API_KEY
 
 Downloads .docx report file, graphs, and csv of 30 days to current directory. 
 '''
- 
 
 import os
-import json
-import csv
 import pandas as pd
-import requests
 import matplotlib.pyplot as plt
 import argparse
 from docx import Document
-from Anomaly import *
-
+from audit_util import *
 
 data_type = "Audit"
-
-current_milli, thirty_days_ago, current_milli_date, thirty_days_ago_date = get_time()
-
-
-def get_data_audit(url,payload,headers,data_type):
-    '''
-    Grabs data via API request, creates and writes data to csv file
-    Returns filename.
-    '''
-    response = requests.request("POST", url, json=payload, headers=headers)
-    
-    if response.status_code != 200:
-        print("Encountered an Error")
-    response = json.loads(response.text)
-    response = response["auditEvents"]
-
-    f_name = f'{data_type}-{thirty_days_ago_date}-to-{current_milli_date}.csv' # Filename
-
-    with open(f_name, 'w') as csvOutput:
-        outputWriter = csv.writer(csvOutput)
-        outputWriter.writerow(list(response[0].keys()))#Write Header
-        for log in response[1:]:
-            outputWriter.writerow(list(log.values()))#Write Data
-
-    return f_name
-
-def clean_data_audit(df):
-    df["Location"] = df["sourceCity"] +','+df["sourceState"]+','+ df["sourceCountry"]
-    df['Date'] = df["timestamp"].apply(convert_milli_to_date)
-    df_cleaned = df.drop(columns=['timestamp','sourceCity','sourceCountry',"sourceState","displayText","failure",'orgUuid','targetUuid','userAgent','targetName','principalType','clientType'])
-    return df_cleaned
-
-
-def audit_grab(api_key):
-    '''
-    Grabs audit report for the last 30 days and writes it to a csv file.
-    Returns filename to csv.
-    '''
-    url = "https://api2.rhombussystems.com/api/report/getAuditFeed"
-
-    payload = {
-        "timestampMsBefore": current_milli,
-        "timestampMsAfter": thirty_days_ago
-    }
-    headers = {
-        "Accept": "application/json",
-        "x-auth-scheme": "api-token",
-        "Content-Type": "application/json",
-        "x-auth-apikey": api_key
-    }
-
-    return get_data_audit(url,payload,headers,data_type)
-
-
-def action_summary(df,action):
-    '''
-    Grabs dataframe summary of wanted action.
-    Returns dataframe filtered by certain action.
-    '''
-    actions = find_unique_values(df,"Action")
-    if action not in actions:
-        return "NO such action found."
-    return df.loc[df["Action"] == action]
-
-def find_unique_values(df,column):
-    '''
-    Returns unique values of wanted column.
-    '''
-    return df[column].unique()
-
-def column_activity_count(df,column):
-    '''
-    Returns dictionary of wanted column counts.
-    '''
-    return df[column].value_counts().to_dict()
 
 def group_users(df):
     '''
@@ -118,15 +38,6 @@ def group_users(df):
         else:
             name_user.append(u)
     return api_user, email_user, name_user, anon_user
-
-def user_action_count(df,user):
-    '''
-    Returns actions done by a certain user.
-    '''
-    user_df = df.loc[(df["principalName"] == user)]
-    if (len(user_df) == 0):
-        return "User not Found"
-    return column_activity_count(user_df,"action")
 
 def anon_user_info(df, anon_user):
     '''
@@ -239,7 +150,6 @@ def overview_report(api_user, email_user, name_user, anon_user, inactive_users, 
     document.add_section()
     document.add_paragraph(f'List of Inactive Users:\n{inactive_users}')
     
-    
     document.save(f'{data_type}Report.docx')
 
     return None
@@ -276,7 +186,6 @@ def anon_report(anon_df, anon_actions, anon_locations):
         for j in range(anon_df.shape[-1]):
             t.cell(i+1,j).text = str(anon_df.values[i,j])
         
-    
     document.save(f'{data_type}AnonReport.docx')
 
     return None
@@ -320,9 +229,9 @@ def main():
     action_plot = plot_activity(activity_count,"action")
     user_plot = plot_activity(user_count,"User")
 
-    # Write report
+    # Write reports
     overview_report(api_user, email_user, name_user, anon_user, inactive_users, action_plot,user_plot)
-    anon_report(anon_df, anon_actions, anon_locations)
+    user_report(anon_df, anon_actions, anon_locations,"Anonymous")
 
 if __name__ == "__main__":
     main()
