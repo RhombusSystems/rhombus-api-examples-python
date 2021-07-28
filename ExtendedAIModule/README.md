@@ -5,11 +5,6 @@ Rhombus Extended AI Module is a Python commandline application that identifies o
 
 The code demos how to send API requests to Rhombus using API token authentication and how to download VODs from Rhombus.
 
-## Requirements
-
-### FFmpeg
-[FFmpeg](https://ffmpeg.org/download.html) is required to download the mp4 videos and process the frames into jpegs which will be processed by the AI. Make sure you can run `ffmpeg` in the terminal and that it is working, otherwise this example will not work. If you have downloaded ffmpeg and it still isn't working in the terminal, make sure you add the path of your ffmpeg installation to the terminal rc file
-
 
 ## Installation
 

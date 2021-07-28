@@ -1,25 +1,3 @@
-###################################################################################
-# Copyright (c) 2021 Rhombus Systems                                              #
-#                                                                                 # 
-# Permission is hereby granted, free of charge, to any person obtaining a copy    #
-# of this software and associated documentation files (the "Software"), to deal   #
-# in the Software without restriction, including without limitation the rights    #
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell       #
-# copies of the Software, and to permit persons to whom the Software is           #
-# furnished to do so, subject to the following conditions:                        #
-#                                                                                 # 
-# The above copyright notice and this permission notice shall be included in all  #
-# copies or substantial portions of the Software.                                 #
-#                                                                                 # 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR      #
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        #
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     #
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          #
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   #
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   #
-# SOFTWARE.                                                                       #
-###################################################################################
-
 import requests
 from datetime import datetime, timedelta
 import time
@@ -59,7 +37,7 @@ class faceProject:
         )
 
         #aruements avaiable for the user to customize
-        parser.add_argument('APIkey', type=str, help='Get this from your console')
+        parser.add_argument('--APIkey', type=str, help='Get this from your console')
         parser.add_argument('-s', '--startTime', type=str, help='Add the end search time in yyyy-mm-dd~(0)0:00:00 or default to 1 hour before current time')
         parser.add_argument('-e', '--endTime', type=str, help='Add the end search time in yyyy-mm-dd~(0)0:00:00 or default to current time')
         parser.add_argument('-f', '--filter', type=str, help= 'Choose a filter', choices=['alert','trusted','named','other'], default='named')
@@ -91,7 +69,7 @@ class faceProject:
         return timestamp
 
     #converts the timestamp to ms time
-    def milliseconds_time(self, human):
+    def milliseconds_time(human):
         # converts human time to ms. the +25200000 is to get it to local time and not GMT
         ms_time = (calendar.timegm(time.strptime(human, '%Y-%m-%d~%H:%M:%S')) * 1000) + 25200000
         return ms_time
@@ -106,7 +84,8 @@ class faceProject:
         resp = self.api_sess.post(endpoint, json=payload,
         verify=False)
         content = resp.content
-        self.data_camera = json.loads(content)
+        data = json.loads(content)
+        return data
 
     #gets the camera_name from the uuid
     def camera_name(self, uuid, data_camera):
@@ -148,7 +127,8 @@ class faceProject:
         self.name = value['faceName']
         self.csv_data[self.count].append(self.name)
         self.csv_data[self.count].append(timestamp)
-        camera = self.camera_name(value['deviceUuid'], self.data_camera)
+        data_camera = self.camera_data()
+        camera = self.camera_name(value['deviceUuid'], data_camera)
         self.csv_data[self.count].append(camera)
         self.thumbnail = self.mediaBaseURL + value['thumbnailS3Key']
         self.saving_img()
@@ -164,11 +144,9 @@ class faceProject:
         self.header = ['Name', 'Date', 'Camera', 'Image File Name']
         self.csv_data = []
         data_recentFaces = self.recent_faces()
-        self.camera_data()
         #gets a path and makes a directory file to the path
         path = os.getcwd()
-        if os.path.exists(path + '/' + self.args.report) == False:
-            os.mkdir(path + '/' + self.args.report)
+        os.mkdir(path + '/' + self.args.report)
         #checks if there is an arguement for a name to filter and only get instances with them
         if self.args.name:
             final_list = [event for event in data_recentFaces['faceEvents'] if event["faceName"] == self.args.name]
