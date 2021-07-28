@@ -28,39 +28,40 @@ class SharedMediaReport:
         #Collect Data and ensure expected status codes are received
         response = self.session.post(self.url+"event/getSharedClipGroupsV2")
         if response.status_code != 200:
-            print("Encountered an Error")
+            print("Encountered an Error in event/getSharedClipGroupsV2 - %i"%response.status_code)
             return
         sharedClipGroups = json.loads(response.text)
         sharedClipGroups = sharedClipGroups["sharedClipGroups"]
 
         response = self.session.post(self.url+"video/getSharedTimelapseGroups")
         if response.status_code != 200:
-            print("Encountered an Error")
+            print("Encountered an Error in video/getSharedTimelapseGroups - %i"%response.status_code)
             return
         sharedTimelapseGroups = json.loads(response.text)
         sharedTimelapseGroups = sharedTimelapseGroups["sharedTimelapses"]
 
         #Camera UUIDs are needed to check for open streams
-        response = self.session.post(self.url+"camera/getMinimalList")
+        response = self.session.post(self.url+"camera/getMinimalCameraStateList")
         if response.status_code != 200:
-            print("Encountered an Error")
+            print("Encountered an Error in camera/getMinimalCameraStateList - %i"%response.status_code)
             return
         cameras = json.loads(response.text)
-        cameras = cameras["cameras"]
+        cameras = cameras["cameraStates"]
 
         sharedStreams = []
         for camera in cameras:#For each camera, check for any open streams
-            payload = {"cameraUuid":camera.get("uuid")}
-            response = self.session.post(self.url+"camera/findSharedLiveVideoStreams",json = payload)
-            if response.status_code != 200:
-                print("Encountered an Error")
-                return
-            response = json.loads(response.text)
-            response = response["sharedLiveVideoStreams"]
-            if response is None:#If no streams, continue
-                continue
-            for stream in response:#If streams, add to list
-                sharedStreams.append(stream)
+            if camera.get("liveStreamShared"):
+                payload = {"cameraUuid":camera.get("uuid")}
+                response = self.session.post(self.url+"camera/findSharedLiveVideoStreams",json = payload)
+                if response.status_code != 200:
+                    print("Encountered an Error in camera/findSharedLiveVideoStreams - %i"%response.status_code)
+                    return
+                response = json.loads(response.text)
+                response = response["sharedLiveVideoStreams"]
+                if response is None:#If no streams, continue
+                    continue
+                for stream in response:#If streams, add to list
+                    sharedStreams.append(stream)
 
         print("--------------------------------------------------------------")
         print("| Shared Media Report                                        |")
