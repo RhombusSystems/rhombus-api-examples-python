@@ -7,6 +7,9 @@ and creates an audit overview and anonymous report within the past 30 day.
 Parameters: required -a API_KEY 
 
 Downloads .docx report file, graphs, and csv of 30 days to current directory. 
+
+Command Line Input: 
+    base case: python3 audit_report.py -a {API_KEY}
 '''
 
 import os
@@ -229,9 +232,11 @@ def main():
     action_plot = plot_activity(activity_count,"action")
     user_plot = plot_activity(user_count,"User")
 
+    plot_fname = user_activity_plot(anon_df,"Anonymous")
+
     # Write reports
     overview_report(api_user, email_user, name_user, anon_user, inactive_users, action_plot,user_plot)
-    user_report(anon_df, anon_actions, anon_locations,"Anonymous")
+    user_report(anon_df, anon_actions, anon_locations,"Anonymous",plot_fname)
 
 if __name__ == "__main__":
     main()

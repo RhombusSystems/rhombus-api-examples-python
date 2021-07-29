@@ -11,6 +11,8 @@ Downloads .docx report file and csv of past 30 days to current directory.
 
 Reports user's locations, actions, and dataframe of all user data. 
 
+Command Line Input: 
+    basic case: python3 user_audit_report.py -a {API_KEY} -u {EMAIL}
 '''
 
 import argparse
@@ -51,8 +53,11 @@ def main():
     # User Actions
     user_actions = user_action_count(df,args.user)
 
+    # User activity plot
+    plot_fname = user_activity_plot(user_df,args.user)
+
     # User Report
-    user_report(user_df, user_actions, user_loc, args.user)
+    user_report(user_df, user_actions, user_loc, args.user, plot_fname)
 
 if __name__ == "__main__":
     main()

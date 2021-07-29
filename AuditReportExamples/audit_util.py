@@ -11,6 +11,9 @@ import requests
 import datetime
 from time import time
 from docx import Document
+import matplotlib.pyplot as plt
+import warnings 
+warnings.filterwarnings("ignore")
 
 data_type = "Audit"
 
@@ -138,7 +141,28 @@ def user_action_count(df,user):
     user_df = user_action(df,user)
     return column_activity_count(user_df,"action")
 
-def user_report(user_df, user_actions, user_locations, user):
+
+def user_activity_plot(user_df,user):
+    xy_df = user_df[["Date","action"]]
+    short = xy_df["Date"].str.split(pat="T").str[0]
+    xy_df["Short Date"] = short
+    date_dic = column_activity_count(xy_df,"Short Date")
+    activity_count = dict(sorted(date_dic.items()))
+
+    plt.figure(figsize=(8, 6))
+    plt.plot(range(len(activity_count)), list(activity_count.values()))
+    plt.xticks(range(len(activity_count)), list(activity_count.keys()))
+    plt.xticks(fontsize=6)
+
+    plt.xlabel("Dates", labelpad=20, weight='bold', size=10)
+    plt.ylabel("Activity Count", labelpad=20, weight='bold', size=10)
+
+    plt.title(f"Activity count for {user} in the past 30 Days")
+    plt.savefig(f"{user}\'s_activity_graph.jpg")
+    return (f"{user}\'s_activity_graph.jpg")
+
+
+def user_report(user_df, user_actions, user_locations, user, graph_fname):
     '''
     Creates a report of anonymous actions, locations and dataframe. 
     '''
@@ -156,6 +180,10 @@ def user_report(user_df, user_actions, user_locations, user):
     
     document.add_section()
     document.add_paragraph(f'List of Locations:\n{user_locations}')
+
+    document.add_paragraph('Graph of User Activity')
+    document.add_picture(graph_fname)
+
 
     document.add_section()
     document.add_paragraph(f'All of {user}\'s Data:')
