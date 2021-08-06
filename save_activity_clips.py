@@ -5,7 +5,7 @@ from datetime import datetime
 import json
 import sys
 
-class audit:
+class SaveActivityClips:
     #Set up workspace for API calls to Rhombus Systems
     def __init__(self,args):
         #Initialize argument parser
@@ -147,5 +147,5 @@ class audit:
             self.searchPolicyAlerts()
 
 if __name__ == "__main__":
-    engine = audit(sys.argv[1:])
+    engine = SaveActivityClips(sys.argv[1:])
     engine.execute()
