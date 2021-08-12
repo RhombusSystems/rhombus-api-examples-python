@@ -2,6 +2,7 @@ import requests
 import argparse
 import json
 import sys
+import time
 
 class SharedMediaReport:
     #Set up workspace for API calls to Rhombus Systems
@@ -55,16 +56,18 @@ class SharedMediaReport:
         response = self.session.post(self.url+"event/getSharedClipGroupsV2")
         if response.status_code != 200:
             print("Encountered an Error in event/getSharedClipGroupsV2 - %i"%response.status_code)
-            return
-        sharedClipGroups = json.loads(response.text)
-        sharedClipGroups = sharedClipGroups["sharedClipGroups"]
+            sharedClipGroups = None
+        else:
+            sharedClipGroups = json.loads(response.text)
+            sharedClipGroups = sharedClipGroups["sharedClipGroups"]
 
         response = self.session.post(self.url+"video/getSharedTimelapseGroups")
         if response.status_code != 200:
             print("Encountered an Error in video/getSharedTimelapseGroups - %i"%response.status_code)
-            return
-        sharedTimelapseGroups = json.loads(response.text)
-        sharedTimelapseGroups = sharedTimelapseGroups["sharedTimelapses"]
+            sharedTimelapseGroups = None
+        else:
+            sharedTimelapseGroups = json.loads(response.text)
+            sharedTimelapseGroups = sharedTimelapseGroups["sharedTimelapses"]
 
         #Camera UUIDs are needed to check for open streams
         response = self.session.post(self.url+"camera/getMinimalCameraStateList")
@@ -77,11 +80,16 @@ class SharedMediaReport:
         sharedStreams = []
         for camera in cameras:#For each camera, check for any open streams
             if camera.get("liveStreamShared"):
-                payload = {"cameraUuid":camera.get("uuid")}
-                response = self.session.post(self.url+"camera/findSharedLiveVideoStreams",json = payload)
-                if response.status_code != 200:
-                    print("Encountered an Error in camera/findSharedLiveVideoStreams - %i"%response.status_code)
-                    return
+                while True:
+                    payload = {"cameraUuid":camera.get("uuid")}
+                    response = self.session.post(self.url+"camera/findSharedLiveVideoStreams",json = payload)
+                    if response.status_code == 429:#If request is rate limited
+                        time.sleep(response.headers.get("Retry-After"))#Wait for "Retry-After"
+                    elif response.status_code == 200:#If response is successful, break from loop
+                        break
+                    else:#If request was not rate limited or successful, move to next camera
+                        print("Encountered an unexpected status code in camera/findSharedLiveVideoStreams - %i"%response.status_code)
+                        continue
                 response = json.loads(response.text)
                 response = response["sharedLiveVideoStreams"]
                 if response is None:#If no streams, continue
