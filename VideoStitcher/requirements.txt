@@ -1,0 +1,4 @@
+requests
+argparse
+numpy
+python-dotenv
