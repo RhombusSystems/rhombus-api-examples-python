@@ -34,10 +34,10 @@ def main():
     args = parser.parse_args()
     
     # Grabs Data and assigns filename
-    file_name = audit_grab(args.api_key)
+    file_name, new_dir_path = audit_grab(args.api_key)
     
     # DataFrame use for outlier test
-    df = pd.read_csv(file_name)
+    df = pd.read_csv(new_dir_path + '/' + file_name)
 
     # Clean audit DataFrame
     clean_df = clean_data_audit(df)

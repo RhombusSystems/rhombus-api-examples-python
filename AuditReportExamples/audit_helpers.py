@@ -14,6 +14,7 @@ from docx import Document
 import matplotlib.pyplot as plt
 import warnings 
 warnings.filterwarnings("ignore")
+from contextlib import suppress
 
 data_type = "Audit"
 
@@ -74,6 +75,11 @@ def get_data_audit(url,payload,headers,data_type):
     response = json.loads(response.text)
     response = response["auditEvents"]
 
+    prev_dir = os.getcwd()
+    new_dir_path = prev_dir + f'/{data_type}_output'
+    with suppress(FileExistsError):
+        os.mkdir(f'{data_type}_output')
+    os.chdir(new_dir_path)
     # CSV file name
     f_name = f'{data_type}-{thirty_days_ago_date}-to-{current_milli_date}.csv' # Filename
 
@@ -84,7 +90,7 @@ def get_data_audit(url,payload,headers,data_type):
         for log in response[1:]:
             outputWriter.writerow(list(log.values()))#Write Data
 
-    return f_name
+    return f_name, new_dir_path
 
 def clean_data_audit(df):
     '''
