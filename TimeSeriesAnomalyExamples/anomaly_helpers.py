@@ -6,6 +6,7 @@ import os
 import requests
 import pandas as pd
 import datetime
+from contextlib import suppress
 from time import time
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -73,12 +74,17 @@ def get_data(url, payload,headers,data_type):
     response = requests.request("POST", url, json=payload, headers=headers) # Response from API data request
 
     current_milli, thirty_days_ago, current_milli_date, thirty_days_ago_date = get_time()
-
+    prev_dir = os.getcwd()
+    new_dir_path = prev_dir + f'/{data_type}_output'
+    with suppress(FileExistsError):
+        os.mkdir(f'{data_type}_output')
+    os.chdir(new_dir_path)
     f_name = f'{data_type}-{thirty_days_ago_date}-to-{current_milli_date}.csv' # Filename
     f = open(f_name, "w") # Creates csv file
     f.write(response.text) # Writes data to csv file
     f.close()
-    return f_name
+    os.chdir(prev_dir)
+    return f_name, new_dir_path
 
 def wanted_anomaly_footage(perc_anomaly, column1, column2,c1_name,c2_name):
     '''
@@ -132,10 +138,8 @@ def grab_footage(api_key, device_id, duration,start_time,outlier_num,column,dire
     # Running copy_footage_to_local_storage.py
     os.system(f'python3 copy_footage_to_local_storage.py --api_key {api_key} --device_id {device_id} --output {output_path} --start_time {start_time} --duration {duration}')
 
-    
-    
 
-def footage_call(column_footage_dates,api_key, device_id, duration,column):
+def footage_call(column_footage_dates,api_key, device_id, duration,column, new_dir_path):
     '''
     Call to grab footage based on datetime given.
     Returns start_time; grab_footage() downloads footage to current directory.
@@ -149,20 +153,19 @@ def footage_call(column_footage_dates,api_key, device_id, duration,column):
     for date in column_footage_dates:
         clean_time = round(date.timestamp())
         start_time.append(clean_time)
-        grab_footage(api_key, device_id, duration, clean_time,outlier_num,column,directory)
+        grab_footage(api_key, device_id, duration, clean_time,outlier_num,column,new_dir_path)
         outlier_num += 1
     os.chdir(directory)
     return start_time
 
 
-def create_report_2var(graph_fname1, graph_fname2,data_type,column1_a,column2_a):
+def create_report_2var(graph_fname1, graph_fname2,data_type,column1_a,column2_a,new_dir_path):
     '''
     Creates report of anomalies. 
     Report contains graphs, list of user specified anomaly values, and path to footage.
     Returns None.
     '''
-    # Get path to video footage.
-    video_path = os.getcwd()
+    os.chdir(new_dir_path)
 
     # Creates document and heading
     document = Document()
@@ -170,8 +173,8 @@ def create_report_2var(graph_fname1, graph_fname2,data_type,column1_a,column2_a)
     
     # Adds Graphs
     document.add_paragraph('Graph of outliers')
-    document.add_picture(video_path+'/'+graph_fname1)
-    document.add_picture(video_path+'/'+graph_fname2)
+    document.add_picture(new_dir_path+'/'+graph_fname1)
+    document.add_picture(new_dir_path+'/'+graph_fname2)
     
     # Adds list of anomalies
     document.add_section()
@@ -180,25 +183,23 @@ def create_report_2var(graph_fname1, graph_fname2,data_type,column1_a,column2_a)
     
     # Adds footage path
     document.add_section()
-    document.add_paragraph(f"Footage of anomaly found at: {video_path}")
+    document.add_paragraph(f"Footage of anomaly found at: {new_dir_path}")
     document.save(f'{data_type}AnomalyReport.docx')
 
-def create_report_1var(graph_fname1,data_type,column1_a):
+def create_report_1var(graph_fname1,data_type,column1_a,new_dir_path):
     '''
     Creates report of anomalies. 
     Report contains graphs, list of user specified anomaly values, and path to footage.
     Returns None.
     '''
-    # Get path to video footage.
-    video_path = os.getcwd()
-
+    os.chdir(new_dir_path)
     # Creates document and heading
     document = Document()
     document.add_heading(text=(f'{data_type} Anomaly Report'))
     
     # Adds Graphs
     document.add_paragraph('Graph of outliers')
-    document.add_picture(video_path+'/'+graph_fname1)
+    document.add_picture(new_dir_path+'/'+graph_fname1)
     
     # Adds list of anomalies
     document.add_section()
@@ -207,7 +208,7 @@ def create_report_1var(graph_fname1,data_type,column1_a):
     
     # Adds footage path
     document.add_section()
-    document.add_paragraph(f"Footage of anomaly found at: {video_path}")
+    document.add_paragraph(f"Footage of anomaly found at: {new_dir_path}")
     document.save(f'{data_type}AnomalyReport.docx')
 
 def standardize_data(data):
@@ -240,11 +241,12 @@ def clean_anomaly(df,column):
 
     return a, clean_a
 
-def visualize(df, clean_dates,clean_a, a, column):
+def visualize(df, clean_dates,clean_a, a, column,output_path):
     '''
     Visualizations. Displays graph of given data and anomalies. 
     Return: None
     '''
+    os.chdir(output_path)
     fig, ax = plt.subplots(figsize=(6,4)) # Creates plot size
     ax.plot(clean_dates, df[column], color='blue', label = 'Normal') # plots x and y 
     ax.scatter(clean_a,a[column], color='red', label = 'Anomaly') # plots anomalies
@@ -261,10 +263,11 @@ def visualize(df, clean_dates,clean_a, a, column):
     # Display legend and plot
     plt.legend()
     plt.savefig(f"{column}_graph.jpg")
-    #plt.show()
+
+    os.chdir("..")
     return (f"{column}_graph.jpg")
 
-def isolation_forest_test(df,data,clean_dates,column1,column2):
+def isolation_forest_test(df,data,clean_dates,column1,column2,output_path):
     '''
     Outlier test. Standardizes data, Finds Anomalies, Cleans Data and Plots graphs.
     Returns: Anomalies and Anomaly dates of columns 1 and 2.
@@ -280,15 +283,16 @@ def isolation_forest_test(df,data,clean_dates,column1,column2):
     # Cleaning anomaly data
     column1_a, column1_clean_a = clean_anomaly(df, column1)
     column2_a, column2_clean_a = clean_anomaly(df, column2) 
-    #print(column1_clean_a)
     
     # Plot Graph
-    column1_fname = visualize(df, clean_dates, column1_clean_a, column1_a,column1)
-    column2_fname = visualize(df, clean_dates, column2_clean_a, column2_a,column2)  
-
+    column1_fname = visualize(df, clean_dates, column1_clean_a, column1_a,column1,output_path)
+    column2_fname = visualize(df, clean_dates, column2_clean_a, column2_a,column2,output_path)  
+    
     return column1_a, column1_clean_a, column1_fname,column2_a, column2_clean_a, column2_fname
 
-def iqr_test(df,column,data_type):
+def iqr_test(df,column,data_type,output_path):
+    os.chdir(output_path)
+    
     q1 = column.quantile(0.25)
     q3 = column.quantile(0.75)
 
@@ -326,6 +330,7 @@ def iqr_test(df,column,data_type):
 
     plt.savefig(f"{data_type}_graph.jpg")
 
+    os.chdir("..")
     return diff_outliers_iqr, diff_outlier_date, f"{data_type}_graph.jpg"
 
 def seek_points(time_ms, cameraUuid, api_key):
