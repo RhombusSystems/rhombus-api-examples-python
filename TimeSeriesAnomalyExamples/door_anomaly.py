@@ -113,6 +113,7 @@ def clean_date_door(df):
         count+=1
         
     df_clean["Door opened (sec)"] = difference_in_time
+
     return df_clean
 
 def main():
@@ -169,7 +170,6 @@ def main():
    
     # Create Report
     create_report_1var(door_graph,data_type,anomaly_data,new_dir_path)
-    
     
 if __name__ == "__main__":
     main()

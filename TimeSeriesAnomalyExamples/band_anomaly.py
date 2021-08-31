@@ -114,6 +114,5 @@ def main():
     # Create Report
     create_report_2var(up_graph,down_graph,data_type,upload_footage_anomalies,download_footage_anomalies,new_dir_path)
 
-
 if __name__ == "__main__":
     main()

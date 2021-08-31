@@ -101,7 +101,7 @@ def main():
     default=60)
 
     args = parser.parse_args()
-
+    
     # Checks for Celcius flag
     if args.celcius: 
         convert = False 
@@ -120,7 +120,6 @@ def main():
    
     # Get amount of anomalies for video footage via percent of anomalies user wants
     temp_footage_anomalies, temp_footage_dates, hum_footage_anomalies, hum_footage_dates = wanted_anomaly_footage(args.perc_anomalies,temp_a,hum_a,"Temperature","Humidity")
-
     associated_cameras = find_associated_camera(args.api_key, url,"climateStates")
 
     # Grab footage from wanted % of anomalies and creates seek points
@@ -139,6 +138,5 @@ def main():
     # Create Report
     create_report_2var(temp_graph,hum_graph,data_type,temp_footage_anomalies,hum_footage_anomalies,new_dir_path)
 
-    
 if __name__ == "__main__":
     main()
