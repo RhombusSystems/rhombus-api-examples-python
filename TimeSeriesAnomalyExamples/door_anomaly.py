@@ -72,13 +72,17 @@ def clean_date_door(df):
     Returns clean dataframe with added column.
     '''
     df = df.drop_duplicates()
-    date = get_datetime(df)
+    date = df["Date"]
+    time = df["Time"]
+
+    time = time.str.split('-').str[0]
+    df["Date"]= date+"T"+time
+    del df["Time"]
     df = df.sort_values(by=['Date'],ascending=True)
 
     count = 0
     previous = 'CLOSED'
     index = []
-    open_door = False
     indexNames = df[ df['State'] == "AJAR" ].index
     df.drop(indexNames , inplace=True)
     for state in df['State']:
@@ -109,7 +113,7 @@ def clean_date_door(df):
         count+=1
         
     df_clean["Door opened (sec)"] = difference_in_time
-   
+
     return df_clean
 
 def main():
@@ -126,41 +130,38 @@ def main():
     help='Device Id to pull frame from')
     
     parser.add_argument('--perc_anomalies', '-p', type=int, required=False,
-    help='Perecent of anomalies you would like downloaded footage of; 1-100; default=5')
-    
+    help='Perecent of anomalies you would like downloaded footage of; 1-100; default=5',
+    default=5)
+
+    parser.add_argument('--duration', '-dur', type=int, required=False,
+    help='Duration of clip in seconds; default=60',
+    default=60)
 
     args = parser.parse_args()
 
-    if args.perc_anomalies:
-        perc_anomalies = args.perc_anomalies
-    else:
-        perc_anomalies = 5
-
-    args.duration = 60
-
     # Grabs data and assigns filename
-    file_name = door_grab(args.api_key,args.device_id)
+    file_name, new_dir_path = door_grab(args.api_key,args.device_id)
 
     # DataFrame used for outlier test
-    df = pd.read_csv(file_name)
+    df = pd.read_csv(new_dir_path + '/' + file_name)
 
     # Clean Data 
     df = clean_date_door(df)
     
     # Outlier Test
-    outliers, outlier_dates, door_graph = iqr_test(df,df["Door opened (sec)"],"Door")
+    outliers, outlier_dates, door_graph = iqr_test(df,df["Door opened (sec)"],"Door",new_dir_path)
     
     #Get amount of anomalies for video footage via percent of anomalies user wants
-    footage_df, outlier_df = wanted_door_footage(perc_anomalies, outliers, df)
+    footage_df, outlier_df = wanted_door_footage(args.perc_anomalies, outliers, df)
     anomaly_data = outlier_df.drop(columns=['State'])
 
     associated_cameras = find_associated_camera(args.api_key,url,"doorStates" )
 
     pandas_date_footage =  [datetime.datetime.strptime(elem, '%Y-%m-%dT%H:%M:%S') for elem in footage_df["Date"]]
-    # Grab footage from wanted % of anomalies and creates seek points
     
+    # Grab footage from wanted % of anomalies and creates seek points
     for camera_id in associated_cameras:
-        door_start = footage_call(pandas_date_footage, args.api_key, camera_id, args.duration,"Door")
+        door_start = footage_call(pandas_date_footage, args.api_key, camera_id, args.duration,"Door", new_dir_path)
         
         # Add Seek Points
         for sec_time in door_start:
@@ -168,8 +169,7 @@ def main():
             seek_points(start_time, camera_id, args.api_key)
    
     # Create Report
-    create_report_1var(door_graph,data_type,anomaly_data)
-    
+    create_report_1var(door_graph,data_type,anomaly_data,new_dir_path)
     
 if __name__ == "__main__":
     main()

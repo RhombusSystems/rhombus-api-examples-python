@@ -93,43 +93,39 @@ def main():
                     action="store_true")
     
     parser.add_argument('--perc_anomalies', '-p', type=int, required=False,
-    help='Perecent of anomalies you would like downloaded footage of; 1-100; default=5')
+    help='Perecent of anomalies you would like downloaded footage of; 1-100; default=5',
+    default=5)
     
+    parser.add_argument('--duration', '-dur', type=int, required=False,
+    help='Duration of clip in seconds; default=60',
+    default=60)
 
     args = parser.parse_args()
-
-    if args.perc_anomalies:
-        perc_anomalies = args.perc_anomalies
-    else:
-        perc_anomalies = 5
-
-    args.duration = 30
-
+    
     # Checks for Celcius flag
     if args.celcius: 
         convert = False 
 
     # Grabs data and assigns filename
-    file_name = EV_grab(args.api_key,args.device_id)
+    file_name,new_dir_path = EV_grab(args.api_key,args.device_id)
 
     # DataFrame used for outlier test
-    df = pd.read_csv(file_name)
+    df = pd.read_csv(new_dir_path + '/' + file_name)
 
     # Clean Data 
     df, clean_dates, data = clean_data(df, convert)
     
     # Outlier Test
-    temp_a, temp_date_a, temp_graph, hum_a, hum_date_a, hum_graph = isolation_forest_test(df, data, clean_dates,"Temperature","Humidity")
+    temp_a, temp_date_a, temp_graph, hum_a, hum_date_a, hum_graph = isolation_forest_test(df, data, clean_dates,"Temperature","Humidity",new_dir_path)
    
     # Get amount of anomalies for video footage via percent of anomalies user wants
-    temp_footage_anomalies, temp_footage_dates, hum_footage_anomalies, hum_footage_dates = wanted_anomaly_footage(perc_anomalies,temp_a,hum_a,"Temperature","Humidity")
-
+    temp_footage_anomalies, temp_footage_dates, hum_footage_anomalies, hum_footage_dates = wanted_anomaly_footage(args.perc_anomalies,temp_a,hum_a,"Temperature","Humidity")
     associated_cameras = find_associated_camera(args.api_key, url,"climateStates")
 
     # Grab footage from wanted % of anomalies and creates seek points
     for camera_id in associated_cameras:
-        temp_start = footage_call(temp_footage_dates, args.api_key, camera_id, args.duration,"Temperature")
-        hum_start = footage_call(hum_footage_dates, args.api_key, camera_id, args.duration,"Humidity")
+        temp_start = footage_call(temp_footage_dates, args.api_key, camera_id, args.duration,"Temperature",new_dir_path)
+        hum_start = footage_call(hum_footage_dates, args.api_key, camera_id, args.duration,"Humidity",new_dir_path)
         
         # Add Seek Points
         for sec_time in temp_start:
@@ -140,8 +136,7 @@ def main():
             seek_points(start_time, camera_id, args.api_key)
 
     # Create Report
-    create_report_2var(temp_graph,hum_graph,data_type,temp_footage_anomalies,hum_footage_anomalies)
+    create_report_2var(temp_graph,hum_graph,data_type,temp_footage_anomalies,hum_footage_anomalies,new_dir_path)
 
-    
 if __name__ == "__main__":
     main()
