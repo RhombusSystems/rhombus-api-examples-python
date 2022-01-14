@@ -1,3 +1,25 @@
+###################################################################################
+# Copyright (c) 2021 Rhombus Systems                                              #
+#                                                                                 #
+# Permission is hereby granted, free of charge, to any person obtaining a copy    #
+# of this software and associated documentation files (the "Software"), to deal   #
+# in the Software without restriction, including without limitation the rights    #
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell       #
+# copies of the Software, and to permit persons to whom the Software is           #
+# furnished to do so, subject to the following conditions:                        #
+#                                                                                 #
+# The above copyright notice and this permission notice shall be included in all  #
+# copies or substantial portions of the Software.                                 #
+#                                                                                 #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR      #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   #
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   #
+# SOFTWARE.                                                                       #
+###################################################################################
+
 import atexit
 import json
 import os
@@ -48,10 +70,6 @@ def rpost(path: str, payload=None, headers=None) -> requests.Response:
     return sess.post(API_URL + path, json=payload, headers=headers)
 
 
-def rget(path: str, payload=None, headers=None) -> requests.Response:
-    return sess.get(API_URL + path, json=payload, headers=headers)
-
-
 def init(cli_args):
     arg_parser = init_arg_parser()
     args = arg_parser.parse_args(cli_args)
@@ -86,6 +104,11 @@ def run():
 
 
 def start_ngrok():
+    """
+    Starts Ngrok. Ngrok is used to create a public URL which Rhombus can use for the Webhook
+    by port forwarding localhost.
+    Credit to: https://github.com/gstaff/flask-ngrok
+    """
     ngrok_path = str(Path(tempfile.gettempdir(), "ngrok"))
     _download_ngrok(ngrok_path)
     system = platform.system()
@@ -165,10 +188,9 @@ def root():
             output_fp.flush()
 
         output_fp.close()
+
     return "success"
 
-
-# {'summary': 'Alert: Alerted face spotted at Rhombus HQ (Rhombus HQ - Camera 2)', 'deviceUuid': 'SdFCcHcOTwa4HcSZ3CpsFQ', 'clipLocationMap': {'SdFCcHcOTwa4HcSZ3CpsFQ': 'us-west-2'}, 'alertUuid': 'E4ZCi2DyQmKvUk6HP_Fevw', 'activityTrigger': 'FACE_ALERT', 'location': 'OnWHibLESTm_zXe121hChw', 'durationSec': 16, 'version': '2', 'timestampMs': 1642115450776, 'thumbnailLocation': 'us-west-2'}
 
 if __name__ == '__main__':
     init(sys.argv[1:])

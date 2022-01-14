@@ -2,3 +2,6 @@ opencv-python
 requests
 argparse
 numpy
+flask==2.0.2
+flask-ngrok==0.0.25
+Flask-Script==2.0.6

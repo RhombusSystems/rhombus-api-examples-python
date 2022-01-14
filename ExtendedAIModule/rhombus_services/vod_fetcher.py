@@ -85,7 +85,7 @@ def fetch_vod(api_key: str, federated_token: str, http_client: requests.sessions
     dir = "./res/" + str(start_time) + "/"
 
     # If the directory does not already exist, then we need to create it
-    if (not os.path.exists(dir)):
+    if not os.path.exists(dir):
         pathlib.Path(dir).mkdir(parents=True, exist_ok=True)
 
     # The path of the clip is dir/clip.mp4 regardless of timestamp. The file is always called clip.mp4
