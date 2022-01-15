@@ -33,6 +33,36 @@ import io
 
 # Import ConnectionType to specify what connection we should have to the camera when downloading our data
 from rhombus_types.connection_type import ConnectionType
+from rhombus_types.rhombus_mpd_info import RhombusMPDInfo
+
+# The possible MPD URI endings
+URI_FILE_ENDINGS = ["clip.mpd", "file.mpd"]
+
+
+def get_segment_uri(mpd_uri, segment_name) -> str:
+    """Gets the URI of a segment with a given segment name.
+
+    :param mpd_uri: The original MPD URI
+    :param segment_name: The replacement name, for example "seg_init.mp4"
+    :return: The new URI
+    """
+    for ending in URI_FILE_ENDINGS:
+        if ending in mpd_uri:
+            return mpd_uri.replace(ending, segment_name)
+
+    return None
+
+
+def get_segment_uri_index(rhombus_mpd_info, mpd_uri, index) -> str:
+    """Gets the URI of a segment with a given index
+
+    :param rhombus_mpd_info: The Rhombus MPD info
+    :param mpd_uri: The original MPD URI
+    :param index: The index starting from 0
+    :return: The new URI
+    """
+    segment_name = rhombus_mpd_info.segment_pattern.replace("$Number$", str(index + rhombus_mpd_info.start_index))
+    return get_segment_uri(mpd_uri, segment_name)
 
 
 def save_clip(headers: Dict[str, str], http_client: requests.sessions.Session, file: io.BufferedWriter,
@@ -57,7 +87,7 @@ def save_clip(headers: Dict[str, str], http_client: requests.sessions.Session, f
     buffer.close()
 
 
-def fetch_vod(api_key: str, http_client: requests.sessions.Session, federated_token: str,  uri: str,
+def fetch_vod(api_key: str, http_client: requests.sessions.Session, federated_token: str, uri: str,
               connection_type: ConnectionType, dir: str, file_name: str, start_time: int, end_time: int) -> None:
     """Download a vod to disk. It will be saved in res/<current time in seconds>
 
@@ -95,20 +125,30 @@ def fetch_vod(api_key: str, http_client: requests.sessions.Session, federated_to
         "Content-Type": "application/json"
     }
 
-    # This will change depend on whether we are using WAN or LAN
-    mpd_name = "clip.mpd" if connection_type == ConnectionType.LAN else "file.mpd"
+    # Get the MPD info from the base URI.
+    mpd_response = http_client.get(uri, headers=headers)
+
+    # If the response failed, then there is nothing we can do
+    if mpd_response.status_code != 200:
+        raise ConnectionError()
+
+    # Get the MPD info
+    rhombus_mpd_info = RhombusMPDInfo(str(mpd_response.content, 'utf-8'))
 
     # Create an output file. This will be written in bytes.
     with open(path, "wb") as file:
         # Because our URI is an mpd, we need to get each of the segments. The seg_init.mp4 is the first of these.
         # Just replace clip.mpd at the end of the URL with seg_init.mp4
-        save_clip(headers, http_client, file, full_uri.replace(mpd_name, "seg_init.mp4"))
+        save_clip(headers, http_client, file, get_segment_uri(full_uri, rhombus_mpd_info.init_string))
 
         # Each of the segments is 2 seconds long, so the number of segments is duration/2
         for i in range(int(duration / 2)):
             # The URI of all subsequent segments will replace clip.mpd with seg_<index>.m4v
             # These files will need to be appended to our existing clip.mp4 in disk
-            save_clip(headers, http_client, file, full_uri.replace(mpd_name, "seg_" + str(i) + ".m4v"))
+            save_clip(headers, http_client, file, get_segment_uri_index(rhombus_mpd_info, full_uri, i))
+
+        # Close the output file
+        file.close()
 
     # Close the output file
     file.close()

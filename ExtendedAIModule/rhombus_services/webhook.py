@@ -6,7 +6,7 @@ import subprocess
 import tempfile
 import time
 from pathlib import Path
-from threading import Timer, Thread
+from threading import Timer
 
 import requests
 from flask import Flask, request
@@ -24,6 +24,7 @@ class WebhookEvent:
     :attribute alert_uuid: The UUID associated for this alert.
     :attribute duration_sec: The duration in seconds that the clip lasts for this event.
     :attribute summary: The summary of this alert.
+    :attribute timestamp_ms: The milliseconds since epoch that this alert appears.
     :attribute mpd_uri: The MPD URI that contains the video clip.
     """
     device_uuid: str
@@ -31,6 +32,7 @@ class WebhookEvent:
     alert_uuid: str
     duration_sec: int
     summary: str
+    timestamp_ms: int
 
     def __init__(self, data: any):
         """Constructor for a webhook event which parses the JSON response from Rhombus.
@@ -44,6 +46,7 @@ class WebhookEvent:
         self.alert_uuid = data['alertUuid']
         self.duration_sec = int(data['durationSec'])
         self.summary = data['summary']
+        self.timestamp_ms = int(data['timestampMs'])
 
     @property
     def mpd_uri(self) -> str:
@@ -107,9 +110,11 @@ def __start_ngrok() -> str:
     return tunnel_url.replace("https", "http")
 
 
-def __run(api_client: rapi.ApiClient):
+def __run(api_client: rapi.ApiClient) -> None:
     """
     Initializes the Webhook and sends the information to Rhombus.
+
+    :param api_client: The Rhombus API client that can be used to make requests.
     """
 
     # Start Ngrok
@@ -153,5 +158,5 @@ def init_webhook(name: str, api_client: rapi.ApiClient, cb: Callable[[WebhookEve
         cb(data)
         return "success"
 
-    # Start the Flask server in the background.
-    Thread(target=lambda: app.run(debug=True, use_reloader=False)).start()
+    # Start the Flask server.
+    app.run(debug=True, use_reloader=False)

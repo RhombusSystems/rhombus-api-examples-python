@@ -39,17 +39,30 @@ def parse_arguments(argv: List[str]) -> argparse.Namespace:
     # The --api_key or -a param will hold our API key
     parser.add_argument('--api_key', '-a', type=str, required=True, help='Rhombus API key')
 
-    # The --camera_uuid or -c param will hold the UUID of the camera which will be processed
-    parser.add_argument('--camera_uuid', '-c', type=str, required=True, help='Device Id to pull footage from')
+    # The --continuous param will hold whether the program should continually classify the objects. If specified
+    # instead of registering a webhook and classifying through events it will loop and classify continuously
+    parser.add_argument('--continuous', required=False, action='store_true', default=False,
+                        help='The --continuous param will hold whether the program should continually classify the '
+                             'objects. If specified instead of registering a webhook and classifying through events '
+                             'it will loop and classify continuously.')
 
-    # The --interval or -i param will hold how often to poll the camera for new footage in seconds, by default 10 seconds
+    # The --camera_uuid or -c param will hold the UUID of the camera which will be processed
+    parser.add_argument('--camera_uuid', '-c', type=str, required=False,
+                        help='Device Id to pull footage from. Required if continuous.')
+
+    # The --interval or -i param will hold how often to poll the camera for new footage in seconds, by default 10
+    # seconds
     parser.add_argument('--interval', '-i', type=int, required=False,
-                        help='How often to poll the camera for new footage in seconds, by default 10 seconds',
+                        help='How often to poll the camera for new footage in seconds, by default 10 seconds. Ignored '
+                             'if not continuous.',
                         default=10)
 
-    # The --connection_type or -t param will hold the ConnectionType to the camera. It is not recommended to run in WAN mode unless this python server is running on a separate network from the camera
+    # The --connection_type or -t param will hold the ConnectionType to the camera. It is not recommended to run in
+    # WAN mode unless this python server is running on a separate network from the camera
     parser.add_argument('--connection_type', '-t', type=str, required=False,
-                        help='The connection type to the camera, either LAN or WAN (default LAN)', default="LAN")
+                        help='The connection type to the camera, either LAN or WAN (default LAN). Ignored if not '
+                             'continuous as webhook downloading is always through WAN.',
+                        default="LAN")
 
     # Return all of our arguments
     return parser.parse_args(argv)
