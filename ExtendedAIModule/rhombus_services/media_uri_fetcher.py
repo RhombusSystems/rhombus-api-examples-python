@@ -30,8 +30,18 @@ import RhombusAPI as rapi
 from helper_types.connection_type import ConnectionType
 
 
+def fetch_federated_token(api_client: rapi.ApiClient) -> str:
+    # Create a new instance of the ORG API to get the federated token
+    org_api = rapi.OrgWebserviceApi(api_client=api_client)
+    # Get the federated session token
+    federated_token_request = rapi.OrgGenerateFederatedSessionTokenRequest(duration_sec=60 * 20)
+    federated_token_response = org_api.generate_federated_session_token(body=federated_token_request)
+
+    return federated_token_response.federated_session_token
+
+
 def fetch_media_uris(api_client: rapi.ApiClient, camera_uuid: str, duration: int, connection_type: ConnectionType) -> \
-Tuple[str, str]:
+        Tuple[str, str]:
     """Get the lan URI of the camera and generate a federatedToken to download the VOD
     
     :param api_client: The API Client for sending requests to Rhombus

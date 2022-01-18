@@ -166,7 +166,7 @@ def classify_directory(yolo_net: cv2.dnn_Net, coco_classes: List[str], directory
 
     # Get the names of the layers in our net
     layer_names: List[str] = yolo_net.getLayerNames()
-    layer_names = [layer_names[i[0] - 1] for i in yolo_net.getUnconnectedOutLayers()]
+    layer_names = [layer_names[i - 1] for i in yolo_net.getUnconnectedOutLayers()]
 
     # Get all of the JPEGs in our directory
     files: List[str] = glob.glob(directory + "*.jpg")

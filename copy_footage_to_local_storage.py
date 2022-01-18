@@ -28,9 +28,26 @@ from datetime import datetime, timedelta
 import urllib3
 
 # just to prevent unnecessary logging since we are not verifying the host
+from rhombus_mpd_info import RhombusMPDInfo
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 _logger = rhombus_logging.get_logger("rhombus.CopyFootageToLocalStorage")
+
+URI_FILE_ENDINGS = ["clip.mpd", "file.mpd"]
+
+
+def get_segment_uri(mpd_uri, segment_name):
+    for ending in URI_FILE_ENDINGS:
+        if ending in mpd_uri:
+            return mpd_uri.replace(ending, segment_name)
+
+    return None
+
+
+def get_segment_uri_index(rhombus_mpd_info, mpd_uri, index):
+    segment_name = rhombus_mpd_info.segment_pattern.replace("$Number$", str(index + rhombus_mpd_info.start_index))
+    return get_segment_uri(mpd_uri, segment_name)
 
 
 class CopyFootageToLocalStorage:
@@ -44,6 +61,7 @@ class CopyFootageToLocalStorage:
         self.api_url = "https://api2.rhombussystems.com"
         self.device_id = args.device_id
         self.output = args.output
+        self.use_wan = args.usewan
 
         if args.start_time:
             self.start_time = args.start_time
@@ -73,6 +91,9 @@ class CopyFootageToLocalStorage:
 
         self.media_sess = requests.session()
         self.media_sess.verify = False
+        self.media_sess.headers = {
+            "x-auth-scheme": scheme,
+            "x-auth-apikey": args.api_key}
 
     def execute(self):
         # get a federated session token for media that lasts 1 hour
@@ -98,7 +119,9 @@ class CopyFootageToLocalStorage:
             _logger.warn("Failed to retrieve camera media uris, cannot continue: %s", media_uri_resp.content)
             return
 
-        mpd_uri_template = media_uri_resp.json()["lanVodMpdUrisTemplates"][0]
+        mpd_uri_template = media_uri_resp.json()["wanVodMpdUriTemplate"] if self.use_wan else \
+            media_uri_resp.json()["lanVodMpdUrisTemplates"][0]
+
         _logger.debug("Raw mpd uri template: %s", mpd_uri_template)
         media_uri_resp.close()
 
@@ -124,12 +147,13 @@ class CopyFootageToLocalStorage:
         # start media session with camera by requesting the MPD file
         mpd_doc_resp = self.media_sess.get(mpd_uri, headers=media_headers)
         _logger.debug("Mpd doc: %s", mpd_doc_resp.content)
+        mpd_info = RhombusMPDInfo(str(mpd_doc_resp.content, 'utf-8'))
         mpd_doc_resp.close()
 
         # start writing the video stream
         with open(self.output, "wb") as output_fp:
             # first write the init file
-            init_seg_uri = mpd_uri.replace("clip.mpd", "seg_init.mp4")
+            init_seg_uri = get_segment_uri(mpd_uri, mpd_info.init_string)
             _logger.debug("Init segment uri: %s", init_seg_uri)
 
             init_seg_resp = self.media_sess.get(init_seg_uri, headers=media_headers)
@@ -142,7 +166,8 @@ class CopyFootageToLocalStorage:
             # now write the actual video segment files.
             # Each segment is 2 seconds, so we have a total of duration / 2 segments to download
             for cur_seg in range(int(self.duration / 2)):
-                seg_uri = mpd_uri.replace("clip.mpd", "seg_" + str(cur_seg) + ".m4v")
+                seg_uri = get_segment_uri_index(mpd_info, mpd_uri,
+                                                cur_seg)
                 _logger.debug("Segment uri: %s", seg_uri)
 
                 seg_resp = self.media_sess.get(seg_uri, headers=media_headers)
@@ -183,6 +208,8 @@ class CopyFootageToLocalStorage:
                             help='Duration in seconds')
         parser.add_argument('--debug', '-g', required=False, action='store_true',
                             help='Print debug logging')
+        parser.add_argument('--usewan', '-w', required=False,
+                            help='Use a WAN connection to download rather than a LAN connection', action='store_true')
         return parser
 
 
