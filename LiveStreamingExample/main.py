@@ -100,7 +100,7 @@ def get_segment_uri(mpd_uri: str, segment_name: str) -> str:
         # If the MPD URI is a LAN connection, it will end in "live.mpd"
         return mpd_uri.replace("live.mpd", segment_name)
     else:
-        raise Exception("The mpd_uri %s does not contain a valid ending!", mpd_uri)
+        raise Exception("The mpd_uri {} does not contain a valid ending!".format(mpd_uri))
 
 
 def get_segment_uri_index(rhombus_mpd_info: RhombusMPDInfo, mpd_uri: str, index: int) -> str:
@@ -165,7 +165,7 @@ class Main:
 
         # If this failed, then we need to fail early.
         if r.status_code != 200:
-            raise Exception("Failed to get media URIs: %s", r.reason)
+            raise Exception("Failed to get media URIs: {}".format(r.status_code))
 
         # Get the media URIs response JSON.
         media_uris_response = r.json()
@@ -195,7 +195,7 @@ class Main:
 
         # If there was an error we need to fail early.
         if r.status_code != 200:
-            raise Exception("Failed to get MPD doc: %s", r.reason)
+            raise Exception("Failed to get MPD doc: {}".format(r.status_code))
 
         # Get the actual MPD document string.
         mpd_doc = str(r.content, 'utf-8')
@@ -298,7 +298,7 @@ class Main:
 
         # If something went wrong, then we need to fail early.
         if r.status_code != 200:
-            raise Exception("Failed to retrieve federated session token, cannot continue: %s", r.reason)
+            raise Exception("Failed to retrieve federated session token, cannot continue: {}".format(r.status_code))
 
         # Update our federated token.
         self.federated_token = r.json()["federatedSessionToken"]
