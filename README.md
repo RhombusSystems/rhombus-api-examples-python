@@ -93,6 +93,15 @@ This example gets a report of recent licenseplates and downloads the pictures of
 - [camera/getMinimalCameraStateList](https://apidocs.rhombussystems.com/reference/getminimalcamerastatelist)
 - [vehicle/getRecentVehicleEvents](https://apidocs.rhombussystems.com/reference/getrecentvehicleevents)
 
+## LiveStreamingExample
+
+This example demonstrates how to re-stream Rhombus live camera footage to a web client.
+
+#### API Endpoints
+
+- [camera/getMediaUris](https://apidocs.rhombussystems.com/reference/getcameramediauris)
+- [org/generateFederatedSessionToken](https://apidocs.rhombussystems.com/reference/generatefederatedsessiontoken)
+
 ## tag_filter_stats.py
 
 This example filters through tag movements and creates CSV file..
