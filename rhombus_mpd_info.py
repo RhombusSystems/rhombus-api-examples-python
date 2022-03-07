@@ -25,7 +25,24 @@ import xml.etree.ElementTree as ET
 
 
 class RhombusMPDInfo:
-    def __init__(self, raw_doc):
+    """Parses and stores information about a Rhombus MPD document.
+
+    :attribute segment_pattern: The segment pattern where "$Number$" should be replaced with the correct segment index.
+                                For example: seg_$Number$.mp4 at 200 -> seg_200.mp4
+    :attribute init_string:     The string that is added to the end of the MPD URI to get the initial MP4 segment.
+                                For example: seg_init.mp4
+    :attribute start_index:     The index that the segment should start at. For WAN streams this should be 1
+                                and for LAN streams 0.
+    """
+    segment_pattern: str
+    init_string: str
+    start_index: int
+
+    def __init__(self, raw_doc: str):
+        """Parses a raw MPD document from Rhombus.
+
+        :param raw_doc: The raw UTF-8 MPD document.
+        """
         raw_doc = re.sub(' xmlns="[^"]+"', '', raw_doc, count=1)
         tree = ET.ElementTree(ET.fromstring(raw_doc))
 
