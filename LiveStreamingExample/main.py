@@ -139,6 +139,7 @@ class Main:
     sess: requests.session = requests.session()
     app: Flask
     port: int
+    is_wan = False
 
     def __init__(self, args: argparse.Namespace):
         """Initialize the main entry point.
@@ -184,6 +185,7 @@ class Main:
             # If an exception occurs, then that likely means we will need a WAN connection so fall back.
             LOGGER.debug("LAN connection failed, falling back to WAN!")
             live_uri = media_uris_response["wanLiveMpdUri"]
+            self.is_wan = True
 
         LOGGER.info("Using live MPD URI %s", live_uri)
 
@@ -231,7 +233,7 @@ class Main:
 
             LOGGER.debug("Getting initial segment!")
             # Get the init segment.
-            response = self.sess.get(get_segment_uri(live_uri, mpd_info.init_string))
+            response = self.sess.get(get_segment_uri(live_uri, mpd_info.init_string), headers=self.get_media_headers())
 
             # If there was an error, then forward that onto the client.
             if response.status_code != 200:
@@ -260,7 +262,8 @@ class Main:
             LOGGER.info("Getting segment %d", segment_index)
 
             # Get the segment.
-            response = self.sess.get(get_segment_uri_index(mpd_info, live_uri, segment_index))
+            response = self.sess.get(get_segment_uri_index(mpd_info, live_uri, segment_index),
+                                     headers=self.get_media_headers())
 
             # If there was an error, then forward that onto the client.
             if response.status_code != 200:
@@ -304,13 +307,14 @@ class Main:
         self.federated_token = r.json()["federatedSessionToken"]
         # Update our last token fetch.
         self.last_token_fetch_sec = current_sec
+        LOGGER.info("Received new federated token!")
 
     def get_media_headers(self) -> dict[str, str]:
         """Get the headers that need to be attached to a media URI request to include the federated token.
 
         :return: The header dictionary
         """
-        return {"Cookie": "RSESSIONID=RFT:" + str(self.federated_token)}
+        return {"Cookie": "RSESSIONID=RFT:" + self.federated_token}
 
     def execute(self) -> None:
         """Run the flask web-server."""
