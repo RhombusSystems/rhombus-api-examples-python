@@ -139,7 +139,6 @@ class Main:
     sess: requests.session = requests.session()
     app: Flask
     port: int
-    is_wan = False
 
     def __init__(self, args: argparse.Namespace):
         """Initialize the main entry point.
@@ -185,7 +184,6 @@ class Main:
             # If an exception occurs, then that likely means we will need a WAN connection so fall back.
             LOGGER.debug("LAN connection failed, falling back to WAN!")
             live_uri = media_uris_response["wanLiveMpdUri"]
-            self.is_wan = True
 
         LOGGER.info("Using live MPD URI %s", live_uri)
 
