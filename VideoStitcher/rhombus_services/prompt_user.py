@@ -74,7 +74,7 @@ def print_recent_human_events(api_client: rapi.ApiClient, events: List[RecentHum
 
         # Get the media URI of that camera
         media_uri_request = rapi.CameraGetMediaUrisWSRequest(camera_uuid=cam.uuid)
-        res = api.get_media_uris(body=media_uri_request)
+        res = api.get_camera_media_uris(body=media_uri_request)
 
         # Get the URI Template
         vod_uri: str = res.wan_vod_mpd_uri_template

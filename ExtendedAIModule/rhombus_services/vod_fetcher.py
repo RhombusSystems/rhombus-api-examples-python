@@ -200,7 +200,7 @@ def fetch_vod(api_key: str, federated_token: str, http_client: requests.sessions
     }
 
     # Get the MPD info from the base URI.
-    mpd_response = http_client.get(uri, headers=headers)
+    mpd_response = http_client.get(full_uri, headers=headers)
 
     # If the response failed, then there is nothing we can do
     if mpd_response.status_code != 200:

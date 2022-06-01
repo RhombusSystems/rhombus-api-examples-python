@@ -22,7 +22,7 @@ def fetch_media_uris(api_client: rapi.ApiClient, camera_uuid: str, duration: int
 
     # Request from Rhombus the media URIs of our camera
     media_uri_request = rapi.CameraGetMediaUrisWSRequest(camera_uuid=camera_uuid)
-    media_uris = cam_api.get_media_uris(body=media_uri_request)
+    media_uris = cam_api.get_camera_media_uris(body=media_uri_request)
 
     # Create a new instance of the ORG API to get the federated token
     org_api = rapi.OrgWebserviceApi(api_client=api_client)
