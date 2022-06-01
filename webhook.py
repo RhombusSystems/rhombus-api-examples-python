@@ -151,16 +151,7 @@ def root():
 
     mpd_uri = "https://media.rhombussystems.com/media/metadata/" + device_uuid + "/" + location + "/" + alert_uuid + "/clip.mpd"
     LOGGER.debug("MPD URI %s", mpd_uri)
-    r = rpost("/api/org/generateFederatedSessionToken", payload={"durationSec": 60 * 60})
-    if r.status_code != 200:
-        LOGGER.error("Failed to retrieve federated session token, cannot continue: %s", r.content)
-        return
-
-    federated_token = r.json()["federatedSessionToken"]
-    LOGGER.debug("Federated token %s", federated_token)
-
-    media_headers = {"Cookie": "RSESSIONID=RFT:" + str(federated_token)}
-    r = sess.get(mpd_uri, headers=media_headers)
+    r = sess.get(mpd_uri)
 
     rhombus_mpd_info = RhombusMPDInfo(str(r.content, 'utf-8'))
 
@@ -170,7 +161,7 @@ def root():
         init_seg_uri = get_segment_uri(mpd_uri, rhombus_mpd_info.init_string)
         LOGGER.debug("Init segment uri: %s", init_seg_uri)
 
-        r = sess.get(init_seg_uri, headers=media_headers)
+        r = sess.get(init_seg_uri)
         LOGGER.debug("seg_init_resp: %s", r)
 
         output_fp.write(r.content)
@@ -181,7 +172,7 @@ def root():
                                             cur_seg)
             LOGGER.debug("Segment uri: %s", seg_uri)
 
-            seg_resp = sess.get(seg_uri, headers=media_headers)
+            seg_resp = sess.get(seg_uri)
             LOGGER.debug("seg_resp: %s", seg_resp)
 
             output_fp.write(seg_resp.content)
