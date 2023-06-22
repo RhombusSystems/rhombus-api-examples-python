@@ -121,7 +121,7 @@ def __run(api_client: rapi.ApiClient) -> None:
     tunnel_url = __start_ngrok()
 
     # Get the API.
-    api = rapi.IntegrationWebserviceApi(api_client)
+    api = rapi.IntegrationsWebserviceApi(api_client)
 
     # Make the request to Rhombus containing our webhook URL.
     body = rapi.IntegrationUpdateWebhookIntegrationWSRequest(
